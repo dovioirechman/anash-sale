@@ -76,7 +76,7 @@ export default function App() {
       <header className="main-header">
         <div className="header-content">
           <div className="brand">
-            <h1>כיכר אנ"ש</h1>
+            <h1>אנ"ש סייל</h1>
             <p className="tagline">לוח המודעות של הקהילה</p>
           </div>
           <div className="header-buttons">
