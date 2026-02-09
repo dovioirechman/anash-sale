@@ -31,13 +31,6 @@ export function TopicFilter({ topics, selected, onSelect, adsTopic }) {
       >
         🎯 פרסומות
       </button>
-      {/* Second tab: All articles */}
-      <button 
-        className={!selected || selected === null ? 'active' : ''} 
-        onClick={() => onSelect(null)}
-      >
-        ✨ הכל
-      </button>
       {topics.map((topic) => (
         <button
           key={topic}
