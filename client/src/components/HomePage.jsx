@@ -106,20 +106,24 @@ export function HomePage({ onArticleClick, onCategoryClick }) {
           </section>
 
           {/* Insert banner ad after every 2 sections */}
-          {bannerAds.length > 0 && (index + 1) % 2 === 0 && index < sections.length - 1 && (
-            <div className="home-banner-ad">
-              <a 
-                href={bannerAds[Math.floor(index / 2) % bannerAds.length]?.link || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img 
-                  src={`${API_URL.replace('/api', '')}/api/image-proxy/${bannerAds[Math.floor(index / 2) % bannerAds.length]?.id}`}
-                  alt="פרסומת"
-                />
-              </a>
-            </div>
-          )}
+          {bannerAds.length > 0 && (index + 1) % 2 === 0 && index < sections.length - 1 && (() => {
+            const ad = bannerAds[Math.floor(index / 2) % bannerAds.length];
+            if (!ad || !ad.imageUrl) return null;
+            return (
+              <div className="home-banner-ad">
+                <a 
+                  href={ad.targetUrl || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img 
+                    src={ad.imageUrl}
+                    alt={ad.description || 'פרסומת'}
+                  />
+                </a>
+              </div>
+            );
+          })()}
         </div>
       ))}
 
