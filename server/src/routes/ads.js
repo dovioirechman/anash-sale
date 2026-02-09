@@ -1,7 +1,35 @@
 import { Router } from 'express';
 import { fetchAds, fetchPageAds } from '../services/adsService.js';
+import https from 'https';
 
 const router = Router();
+
+// Image proxy to bypass Google Drive CORS restrictions
+router.get('/image/:fileId', (req, res) => {
+  const { fileId } = req.params;
+  const driveUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+  
+  https.get(driveUrl, (driveRes) => {
+    // Follow redirects
+    if (driveRes.statusCode === 302 || driveRes.statusCode === 301) {
+      https.get(driveRes.headers.location, (finalRes) => {
+        res.set('Content-Type', finalRes.headers['content-type'] || 'image/jpeg');
+        res.set('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
+        finalRes.pipe(res);
+      }).on('error', (err) => {
+        console.error('Image proxy redirect error:', err);
+        res.status(500).send('Error fetching image');
+      });
+    } else {
+      res.set('Content-Type', driveRes.headers['content-type'] || 'image/jpeg');
+      res.set('Cache-Control', 'public, max-age=86400');
+      driveRes.pipe(res);
+    }
+  }).on('error', (err) => {
+    console.error('Image proxy error:', err);
+    res.status(500).send('Error fetching image');
+  });
+});
 
 // Cache for banner ads
 let adsCache = [];

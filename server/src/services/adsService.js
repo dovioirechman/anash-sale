@@ -66,15 +66,8 @@ async function fetchAdsFromFolder(folderName) {
       const parsed = parseAdFilename(file.name);
       if (!parsed) continue;
 
-      // Use thumbnail link with larger size, or fallback to direct link
-      // The thumbnail link is more reliable for public access
-      let imageUrl;
-      if (file.thumbnailLink) {
-        // Replace the size parameter to get a larger image
-        imageUrl = file.thumbnailLink.replace(/=s\d+/, '=s1600');
-      } else {
-        imageUrl = `https://drive.google.com/uc?export=view&id=${file.id}`;
-      }
+      // Use our proxy to bypass CORS - will be converted to full URL on client
+      const imageUrl = `/api/ads/image/${file.id}`;
       
       console.log(`Ad: ${file.name} -> ${imageUrl}`);
       

@@ -1,17 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Elegant Purple & Bronze Palette */
-  --primary: #6D5ACF;
-  --primary-light: #8B7FD9;
-  --primary-dark: #5346A8;
-  --secondary: #8B7355;
-  --secondary-light: #A68B6A;
-  --accent-plum: #9D7BB0;
-  --accent-rose: #B8847A;
-  --accent-slate: #6B7280;
-  --accent-sage: #7D8B76;
-  --accent-copper: #9D6B53;
+  /* Blue & Orange Palette - matching logo */
+  --primary: #1a5fb4;
+  --primary-light: #3584e4;
+  --primary-dark: #1c4f8c;
+  --secondary: #e67e22;
+  --secondary-light: #f39c12;
+  --accent-plum: #2980b9;
+  --accent-rose: #e74c3c;
+  --accent-slate: #5c6bc0;
+  --accent-sage: #27ae60;
+  --accent-copper: #d35400;
   
   /* Backgrounds - Warm & Refined */
   --bg-dark: #2D2A3E;
@@ -32,14 +32,14 @@
   --border-glow: rgba(109, 90, 207, 0.2);
   
   /* Refined Gradients */
-  --gradient-premium: linear-gradient(135deg, #6D5ACF 0%, #9D7BB0 100%);
-  --gradient-bronze: linear-gradient(135deg, #8B7355 0%, #A68B6A 100%);
-  --gradient-soft-purple: linear-gradient(135deg, #8B7FD9 0%, #A89BD4 100%);
-  --gradient-soft-rose: linear-gradient(135deg, #C48B9F 0%, #D4A5B5 100%);
-  --gradient-soft-sage: linear-gradient(135deg, #8BA888 0%, #A3BDA0 100%);
-  --gradient-hero: linear-gradient(135deg, #2D2A3E 0%, #433F54 50%, #5C5872 100%);
-  --gradient-elegant: linear-gradient(135deg, #6D5ACF 0%, #C9A962 100%);
-  --gradient-nature: linear-gradient(135deg, #8BA888 0%, #A3BDA0 100%);
+  --gradient-premium: linear-gradient(135deg, #1a5fb4 0%, #3584e4 100%);
+  --gradient-bronze: linear-gradient(135deg, #e67e22 0%, #f39c12 100%);
+  --gradient-soft-purple: linear-gradient(135deg, #3584e4 0%, #62a0ea 100%);
+  --gradient-soft-rose: linear-gradient(135deg, #e67e22 0%, #f39c12 100%);
+  --gradient-soft-sage: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  --gradient-hero: linear-gradient(135deg, #1a365d 0%, #1a5fb4 50%, #3584e4 100%);
+  --gradient-elegant: linear-gradient(135deg, #1a5fb4 0%, #e67e22 100%);
+  --gradient-nature: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
   --gradient-mesh: radial-gradient(at 40% 20%, hsla(252, 50%, 70%, 0.06) 0px, transparent 50%),
                    radial-gradient(at 80% 0%, hsla(40, 50%, 70%, 0.05) 0px, transparent 50%),
                    radial-gradient(at 0% 60%, hsla(280, 40%, 70%, 0.04) 0px, transparent 50%);
@@ -82,16 +82,13 @@ body {
 
 /* ========== PREMIUM HEADER ========== */
 .main-header {
-  background: 
-    linear-gradient(rgba(45, 42, 62, 0.92), rgba(45, 42, 62, 0.88)),
-    url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1920&q=80');
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
   padding: 0;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 4px 20px rgba(26, 54, 93, 0.12);
+  border-bottom: 2px solid #1a5fb4;
 }
 
 .header-content {
@@ -105,25 +102,25 @@ body {
 
 .brand {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.brand h1 {
-  font-family: 'Rubik', sans-serif;
-  font-size: 2.5rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #D4C4B0 0%, #E8DDD0 50%, #F5F0EA 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.5px;
+.logo {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
 }
 
-.tagline {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 0.25rem;
-  font-weight: 300;
-  letter-spacing: 0.5px;
+.logo:hover {
+  transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+  .logo {
+    height: 55px;
+  }
 }
 
 .header-buttons {
@@ -158,25 +155,26 @@ body {
 }
 
 .publish-btn {
-  background: var(--gradient-bronze);
+  background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
   color: white;
-  box-shadow: 0 4px 15px rgba(139, 115, 85, 0.35);
+  box-shadow: 0 4px 15px rgba(230, 126, 34, 0.35);
 }
 
 .publish-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(139, 115, 85, 0.45);
+  box-shadow: 0 6px 20px rgba(230, 126, 34, 0.5);
 }
 
 .business-btn {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, #1a5fb4 0%, #1c4f8c 100%);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: none;
+  box-shadow: 0 4px 15px rgba(26, 95, 180, 0.3);
 }
 
 .business-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: linear-gradient(135deg, #1c4f8c 0%, #153d6b 100%);
+  transform: translateY(-2px);
   transform: translateY(-2px);
   border-color: rgba(255, 255, 255, 0.4);
 }

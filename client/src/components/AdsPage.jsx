@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import { API_URL } from '../config';
 
+// Convert relative image URL to full URL
+function getImageUrl(imageUrl) {
+  if (!imageUrl) return '';
+  if (imageUrl.startsWith('http')) return imageUrl;
+  const path = imageUrl.startsWith('/api') ? imageUrl.slice(4) : imageUrl;
+  return `${API_URL}${path}`;
+}
+
 export function AdsPage() {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +56,7 @@ export function AdsPage() {
               className="ad-gallery-item"
             >
               <img 
-                src={ad.imageUrl} 
+                src={getImageUrl(ad.imageUrl)} 
                 alt={ad.description || 'מודעה ממומנת'} 
                 loading="lazy"
               />

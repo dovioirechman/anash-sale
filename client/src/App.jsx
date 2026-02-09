@@ -76,8 +76,7 @@ export default function App() {
       <header className="main-header">
         <div className="header-content">
           <div className="brand">
-            <h1>אנ"ש סייל</h1>
-            <p className="tagline">לוח המודעות של הקהילה</p>
+            <img src="/logo.png" alt="אנש סייל" className="logo" />
           </div>
           <div className="header-buttons">
             <button className="publish-btn" onClick={() => setShowPublishForm(true)}>
