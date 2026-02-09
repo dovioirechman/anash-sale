@@ -21,10 +21,17 @@ export function getTopicIcon(topic) {
   return TOPIC_ICONS[topic] || '📋';
 }
 
-export function TopicFilter({ topics, selected, onSelect, adsTopic }) {
+export function TopicFilter({ topics, selected, onSelect, adsTopic, homeTopic }) {
   return (
     <div className="topic-filter">
-      {/* First tab: Ads */}
+      {/* Home tab */}
+      <button 
+        className={selected === homeTopic ? 'active' : ''} 
+        onClick={() => onSelect(homeTopic)}
+      >
+        🏠 ראשי
+      </button>
+      {/* Ads tab */}
       <button 
         className={selected === adsTopic ? 'active' : ''} 
         onClick={() => onSelect(adsTopic)}

@@ -8,24 +8,27 @@ import { ArticleView } from './components/ArticleView';
 import { PublishForm } from './components/PublishForm';
 import { AdBanner, SidebarAds } from './components/AdBanner';
 import { AdsPage } from './components/AdsPage';
+import { WhatsAppGroups } from './components/WhatsAppGroups';
+import { HomePage } from './components/HomePage';
 import './styles.css';
 
 // Categories to exclude from publishing (external sources)
 const EXCLUDED_CATEGORIES = ['חדשות חב״ד', 'חדשות כלכלה', 'נדל״ן בלוד', 'קבוצות וואטסאפ'];
 
-// Special topic for ads page
+// Special topics
 const ADS_TOPIC = '__פרסומות__';
+const HOME_TOPIC = '__ראשי__';
 
 export default function App() {
-  const [selectedTopic, setSelectedTopic] = useState(ADS_TOPIC); // Default to ads
+  const [selectedTopic, setSelectedTopic] = useState(HOME_TOPIC); // Default to home page
   const [selectedCity, setSelectedCity] = useState(null);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [articleLoading, setArticleLoading] = useState(false);
   const [showPublishForm, setShowPublishForm] = useState(false);
   
-  // Only fetch articles if not on ads tab
+  // Only fetch articles if on a specific category
   const { articles, topics, cities, loading, error } = useArticles(
-    selectedTopic === ADS_TOPIC ? null : selectedTopic, 
+    (selectedTopic === ADS_TOPIC || selectedTopic === HOME_TOPIC) ? null : selectedTopic, 
     selectedCity
   );
   
@@ -75,7 +78,7 @@ export default function App() {
       )}
       <header className="main-header">
         <div className="header-content">
-          <div className="brand" onClick={() => setSelectedTopic(ADS_TOPIC)} style={{ cursor: 'pointer' }}>
+          <div className="brand" onClick={() => setSelectedTopic(HOME_TOPIC)} style={{ cursor: 'pointer' }}>
             <img src="/logo.png" alt="אנש סייל" className="logo" />
           </div>
           <div className="header-buttons">
@@ -102,13 +105,16 @@ export default function App() {
 
         <main className="container">
           <TopicFilter 
-            topics={topics} 
+            topics={topics.filter(t => t !== 'קבוצות וואטסאפ')} 
             selected={selectedTopic} 
             onSelect={handleTopicSelect}
             adsTopic={ADS_TOPIC}
+            homeTopic={HOME_TOPIC}
           />
           
-          {selectedTopic && selectedTopic !== ADS_TOPIC && isApartmentCategory(selectedTopic) && cities.length > 0 && (
+          {selectedTopic !== HOME_TOPIC && <WhatsAppGroups />}
+          
+          {selectedTopic && selectedTopic !== ADS_TOPIC && selectedTopic !== HOME_TOPIC && isApartmentCategory(selectedTopic) && cities.length > 0 && (
             <CityFilter 
               cities={cities} 
               selected={selectedCity} 
@@ -116,7 +122,12 @@ export default function App() {
             />
           )}
 
-          {selectedTopic === ADS_TOPIC ? (
+          {selectedTopic === HOME_TOPIC ? (
+            <HomePage 
+              onArticleClick={handleArticleClick}
+              onCategoryClick={handleTopicSelect}
+            />
+          ) : selectedTopic === ADS_TOPIC ? (
             <AdsPage />
           ) : loading ? (
             <div className="loading"></div>
