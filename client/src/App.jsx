@@ -94,9 +94,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* Top Banner Ad */}
-      <AdBanner position="top" />
-
       <div className="main-layout">
         {/* Left Sidebar Ads */}
         <aside className="sidebar sidebar-left">
