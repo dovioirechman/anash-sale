@@ -66,8 +66,13 @@ async function fetchAdsFromFolder(folderName) {
       const parsed = parseAdFilename(file.name);
       if (!parsed) continue;
 
-      // Use our proxy to bypass CORS - will be converted to full URL on client
-      const imageUrl = `/api/ads/image/${file.id}`;
+      // Use the thumbnail link from Drive API or fallback
+      let imageUrl;
+      if (file.thumbnailLink) {
+        imageUrl = file.thumbnailLink.replace(/=s\d+/, '=s1000');
+      } else {
+        imageUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;
+      }
       
       console.log(`Ad: ${file.name} -> ${imageUrl}`);
       

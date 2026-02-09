@@ -1,15 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API_URL } from '../config';
 
-// Convert relative image URL to full URL
-function getImageUrl(imageUrl) {
-  if (!imageUrl) return '';
-  if (imageUrl.startsWith('http')) return imageUrl;
-  // Remove /api prefix if present since API_URL already includes it
-  const path = imageUrl.startsWith('/api') ? imageUrl.slice(4) : imageUrl;
-  return `${API_URL}${path}`;
-}
-
 export function AdBanner({ position = 'middle', className = '' }) {
   const [ads, setAds] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -49,7 +40,7 @@ export function AdBanner({ position = 'middle', className = '' }) {
         className="ad-link"
       >
         <img 
-          src={getImageUrl(ad.imageUrl)} 
+          src={ad.imageUrl} 
           alt={ad.description || 'פרסומת'} 
           loading="lazy"
         />
@@ -98,7 +89,7 @@ export function SidebarAds() {
           className="sidebar-ad"
         >
           <img 
-            src={getImageUrl(ad.imageUrl)} 
+            src={ad.imageUrl} 
             alt={ad.description || 'פרסומת'} 
             loading="lazy"
           />
