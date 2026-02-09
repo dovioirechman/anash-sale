@@ -3,7 +3,7 @@ import { config } from '../config/index.js';
 
 const drive = google.drive({ version: 'v3' });
 
-const FOLDER_ID = '1t-lqysStO1kWwT4GVHZMedgDVk3P3t-F';
+const FOLDER_ID = '1hBWqhB0hVJvJH0o_7wQtuxoweXAIofJC';
 const API_KEY = config.google.apiKey;
 
 // Parse filename to extract URL
