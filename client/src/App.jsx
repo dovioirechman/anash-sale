@@ -75,7 +75,7 @@ export default function App() {
       )}
       <header className="main-header">
         <div className="header-content">
-          <div className="brand">
+          <div className="brand" onClick={() => setSelectedTopic(ADS_TOPIC)} style={{ cursor: 'pointer' }}>
             <img src="/logo.png" alt="אנש סייל" className="logo" />
           </div>
           <div className="header-buttons">
