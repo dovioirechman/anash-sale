@@ -12,7 +12,7 @@ import { google } from 'googleapis';
 const drive = google.drive({ version: 'v3' });
 const sheets = google.sheets({ version: 'v4' });
 
-const FOLDER_ID = '1t-lqysStO1kWwT4GVHZMedgDVk3P3t-F';
+const FOLDER_ID = '1hBWqhB0hVJvJH0o_7wQtuxoweXAIofJC';
 const API_KEY = process.env.GOOGLE_API_KEY;
 
 // ============ CITY DETECTION ============
