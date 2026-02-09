@@ -208,17 +208,106 @@ async function fetchAdsFromFolder(folderName) {
 }
 
 // ============ NEWS SERVICES ============
-async function fetchChabadNews() {
-  // Simplified version - returns placeholder
-  return [];
+
+// Helper to clean HTML text
+function cleanText(text) {
+  return text
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isNavigationText(text) {
+  const navPatterns = ['חדשות', 'כתבות', 'עמוד הבית', 'אודות', 'צור קשר', 'תפריט'];
+  return navPatterns.some(p => text === p || text.length < 5);
 }
 
 async function fetchEconomyNews() {
-  return [];
-}
-
-async function fetchRealEstate() {
-  return [];
+  console.log('Fetching Economy news from bizzness.net...');
+  
+  try {
+    const response = await fetch('https://bizzness.net/', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+        'Accept': 'text/html',
+      }
+    });
+    const html = await response.text();
+    
+    // Extract article links
+    const links = [];
+    const seen = new Set();
+    const pattern = /<a\s+href="(https:\/\/bizzness\.net\/[^"]+\/)"[^>]*>\s*<img[^>]+data-lazy-src="([^"]+)"/gi;
+    
+    let match;
+    while ((match = pattern.exec(html)) !== null && links.length < 8) {
+      const articleUrl = match[1];
+      const imageUrl = match[2];
+      if (articleUrl.includes('/category/') || articleUrl.includes('/author/')) continue;
+      if (!seen.has(articleUrl)) {
+        seen.add(articleUrl);
+        links.push({ url: articleUrl, imageUrl });
+      }
+    }
+    
+    // Fetch each article
+    const articles = [];
+    for (const link of links.slice(0, 6)) {
+      try {
+        const artResponse = await fetch(link.url, {
+          headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'text/html' }
+        });
+        const artHtml = await artResponse.text();
+        
+        const urlPath = link.url.replace('https://bizzness.net/', '').replace(/\/$/, '');
+        const title = decodeURIComponent(urlPath).replace(/-/g, ' ');
+        
+        if (isNavigationText(title) || title.length < 10) continue;
+        
+        const contentMatch = artHtml.match(/<div class="row entry-content">([\s\S]*?)<\/div><!-- \.entry-content -->/);
+        let content = '';
+        
+        if (contentMatch) {
+          const paragraphs = contentMatch[1].match(/<p>([^<]+)<\/p>/g);
+          if (paragraphs) {
+            content = paragraphs
+              .map(p => cleanText(p.replace(/<\/?p>/g, '')))
+              .filter(p => p.length > 20)
+              .join('\n\n');
+          }
+        }
+        
+        if (!content) {
+          const pMatch = artHtml.match(/<p>([^<]{50,500})<\/p>/);
+          if (pMatch) content = cleanText(pMatch[1]);
+        }
+        
+        if (content && content.length > 30) {
+          articles.push({
+            id: createStableId('economy', title),
+            title: title.substring(0, 80),
+            summary: content.substring(0, 150) + '...',
+            content: content,
+            imageUrl: link.imageUrl,
+            date: new Date().toISOString(),
+            topic: 'חדשות כלכלה',
+            isExternal: false,
+          });
+        }
+      } catch (e) {
+        console.error(`Error fetching article:`, e.message);
+      }
+    }
+    
+    console.log(`Fetched ${articles.length} Economy articles`);
+    return articles;
+  } catch (error) {
+    console.error('Error fetching Economy news:', error.message);
+    return [];
+  }
 }
 
 // ============ CACHE ============
@@ -237,12 +326,13 @@ async function loadAllContent(forceRefresh = false) {
     return articlesCache;
   }
 
-  const [driveArticles, whatsappGroups] = await Promise.all([
+  const [driveArticles, whatsappGroups, economyNews] = await Promise.all([
     listAllArticles(),
     fetchWhatsAppGroups(),
+    fetchEconomyNews(),
   ]);
 
-  let allArticles = [...driveArticles, ...whatsappGroups];
+  let allArticles = [...driveArticles, ...whatsappGroups, ...economyNews];
 
   allArticles = allArticles.map(article => {
     if (isApartmentCategory(article.topic)) {

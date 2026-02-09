@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { listAllArticles, fetchWhatsAppGroups } from '../services/googleDrive.js';
-import { fetchChabadNews, fetchEconomyNews, fetchRealEstate } from '../services/newsService.js';
+import { fetchChabadNews, fetchEconomyNews } from '../services/newsService.js';
 import { detectCityInArticle, isApartmentCategory } from '../services/cityDetection.js';
 
 const router = Router();
@@ -23,15 +23,14 @@ async function loadAllContent(forceRefresh = false) {
   console.log('Fetching all content...');
   
   // Fetch all sources in parallel
-  const [driveArticles, chabadNews, economyNews, realEstate, whatsappGroups] = await Promise.all([
+  const [driveArticles, chabadNews, economyNews, whatsappGroups] = await Promise.all([
     listAllArticles(),
     fetchChabadNews(),
     fetchEconomyNews(),
-    fetchRealEstate(),
     fetchWhatsAppGroups(),
   ]);
   
-  let allArticles = [...driveArticles, ...chabadNews, ...economyNews, ...realEstate, ...whatsappGroups];
+  let allArticles = [...driveArticles, ...chabadNews, ...economyNews, ...whatsappGroups];
   
   // Add city detection for apartment categories
   allArticles = allArticles.map(article => {
