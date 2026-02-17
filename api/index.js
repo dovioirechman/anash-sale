@@ -246,7 +246,7 @@ async function fetchEconomyNews() {
     const pattern = /<a\s+href="(https:\/\/bizzness\.net\/[^"]+\/)"[^>]*>\s*<img[^>]+data-lazy-src="([^"]+)"/gi;
     
     let match;
-    while ((match = pattern.exec(html)) !== null && links.length < 8) {
+    while ((match = pattern.exec(html)) !== null && links.length < 20) {
       const articleUrl = match[1];
       const imageUrl = match[2];
       if (articleUrl.includes('/category/') || articleUrl.includes('/author/')) continue;
@@ -258,7 +258,7 @@ async function fetchEconomyNews() {
     
     // Fetch each article
     const articles = [];
-    for (const link of links.slice(0, 6)) {
+    for (const link of links.slice(0, 16)) {
       try {
         const artResponse = await fetch(link.url, {
           headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'text/html' }

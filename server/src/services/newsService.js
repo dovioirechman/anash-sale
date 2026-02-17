@@ -90,7 +90,7 @@ export async function fetchEconomyNews() {
     
     // Fetch content for each article (limit to 8)
     const articles = [];
-    for (const link of articleLinks.slice(0, 8)) {
+    for (const link of articleLinks.slice(0, 16)) {
       try {
         const articleData = await fetchBizznessArticle(link.url, link.imageUrl);
         if (articleData) {
@@ -125,7 +125,7 @@ function extractBizznessLinks(html) {
   const pattern = /<a\s+href="(https:\/\/bizzness\.net\/[^"]+\/)"[^>]*>\s*<img[^>]+data-lazy-src="([^"]+)"/gi;
   
   let match;
-  while ((match = pattern.exec(html)) !== null && links.length < 12) {
+  while ((match = pattern.exec(html)) !== null && links.length < 20) {
     const articleUrl = match[1];
     const imageUrl = match[2];
     
