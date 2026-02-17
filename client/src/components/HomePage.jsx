@@ -44,11 +44,19 @@ export function HomePage({ onArticleClick, onCategoryClick }) {
           }
         });
 
-        // Convert to array and sort by number of articles
+        // Convert to array and sort by priority order
+        const priorityOrder = ['חדשות כלכלה', 'משרות', 'דירות למכירה', 'דירות להשכרה'];
         const sectionsArray = Object.entries(grouped)
           .map(([topic, articles]) => ({ topic, articles }))
           .filter(s => s.articles.length > 0)
-          .sort((a, b) => b.articles.length - a.articles.length);
+          .sort((a, b) => {
+            const aIndex = priorityOrder.indexOf(a.topic);
+            const bIndex = priorityOrder.indexOf(b.topic);
+            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+            if (aIndex !== -1) return -1;
+            if (bIndex !== -1) return 1;
+            return b.articles.length - a.articles.length;
+          });
 
         setSections(sectionsArray);
 
