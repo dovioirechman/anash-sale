@@ -107,7 +107,7 @@ export function WhatsAppGroups() {
           className="whatsapp-toggle"
           onClick={() => setExpanded(!expanded)}
         >
-          {expanded ? 'הצג פחות' : `הצג עוד ${groups.length - 4} קבוצות`}
+          {expanded ? 'הצג פחות' : 'הצג עוד קבוצות'}
         </button>
       )}
     </div>

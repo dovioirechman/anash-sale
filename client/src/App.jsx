@@ -98,6 +98,15 @@ export default function App() {
             </a>
           </div>
         </div>
+        <nav className="header-nav">
+          <TopicFilter 
+            topics={topics.filter(t => t !== 'קבוצות וואטסאפ')} 
+            selected={selectedTopic} 
+            onSelect={handleTopicSelect}
+            adsTopic={ADS_TOPIC}
+            homeTopic={HOME_TOPIC}
+          />
+        </nav>
       </header>
 
       <div className="main-layout">
@@ -107,14 +116,6 @@ export default function App() {
         </aside>
 
         <main className="container">
-          <TopicFilter 
-            topics={topics.filter(t => t !== 'קבוצות וואטסאפ')} 
-            selected={selectedTopic} 
-            onSelect={handleTopicSelect}
-            adsTopic={ADS_TOPIC}
-            homeTopic={HOME_TOPIC}
-          />
-          
           {selectedTopic !== HOME_TOPIC && <WhatsAppGroups />}
           
           {selectedTopic && selectedTopic !== ADS_TOPIC && selectedTopic !== HOME_TOPIC && isApartmentCategory(selectedTopic) && cities.length > 0 && (
