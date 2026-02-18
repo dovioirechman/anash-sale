@@ -7,6 +7,7 @@ import {
   updateSubmissionStatus,
   deleteSubmission 
 } from '../services/submissionsService.js';
+import { appendToGoogleDoc } from '../services/googleDrive.js';
 
 const router = Router();
 
@@ -89,7 +90,7 @@ router.get('/submissions', requireAuth, (req, res) => {
 });
 
 // Approve submission (protected)
-// Returns formatted content for manual copy to Google Doc
+// Automatically adds to Google Drive if service account is configured
 router.post('/submissions/:id/approve', requireAuth, async (req, res) => {
   try {
     const submission = getSubmissionById(req.params.id);
@@ -98,7 +99,31 @@ router.post('/submissions/:id/approve', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Submission not found' });
     }
     
-    // Format content for Google Doc (## heading format)
+    // Try to automatically add to Google Drive
+    if (config.google.serviceAccount) {
+      try {
+        await appendToGoogleDoc(
+          submission.category,
+          submission.title,
+          submission.content,
+          submission.contact
+        );
+        
+        // Delete submission after successful publish
+        deleteSubmission(req.params.id);
+        
+        return res.json({ 
+          message: 'המודעה אושרה ופורסמה בהצלחה!',
+          published: true,
+          category: submission.category
+        });
+      } catch (driveError) {
+        console.error('Failed to publish to Drive:', driveError.message);
+        // Fall back to manual copy
+      }
+    }
+    
+    // Fallback: Return formatted content for manual copy
     const formattedContent = `## ${submission.title}\n${submission.content}${submission.contact ? `\n\nליצירת קשר: ${submission.contact}` : ''}`;
     
     // Mark as approved and delete
@@ -106,6 +131,7 @@ router.post('/submissions/:id/approve', requireAuth, async (req, res) => {
     
     res.json({ 
       message: 'Submission approved',
+      published: false,
       category: submission.category,
       formattedContent,
       instructions: `העתק את התוכן למסמך "${submission.category}" בגוגל דרייב`

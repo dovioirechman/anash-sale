@@ -99,7 +99,15 @@ export function AdminPage({ onClose }) {
 
       if (response.ok) {
         const data = await response.json();
-        setApprovedContent(data);
+        
+        // If automatically published, show success message
+        if (data.published) {
+          setError(''); // Clear any previous errors
+          alert(`✓ ${data.message}\nקטגוריה: ${data.category}`);
+        } else {
+          // Fallback to manual copy
+          setApprovedContent(data);
+        }
         loadSubmissions();
       } else {
         setError('שגיאה באישור הבקשה');

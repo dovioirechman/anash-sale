@@ -190,3 +190,102 @@ export async function fetchWhatsAppGroups() {
     return [];
   }
 }
+
+// ========== WRITE FUNCTIONALITY (requires Service Account) ==========
+
+// Get authenticated drive client using service account
+function getAuthenticatedDrive() {
+  if (!config.google.serviceAccount) {
+    throw new Error('Service account credentials not configured');
+  }
+
+  const auth = new google.auth.GoogleAuth({
+    credentials: config.google.serviceAccount,
+    scopes: ['https://www.googleapis.com/auth/drive'],
+  });
+
+  return google.drive({ version: 'v3', auth });
+}
+
+// Find document by category name
+async function findDocByCategory(category) {
+  const authDrive = getAuthenticatedDrive();
+  const folderId = config.google.folderId;
+
+  const response = await authDrive.files.list({
+    q: `'${folderId}' in parents and mimeType='application/vnd.google-apps.document' and name='${category}' and trashed=false`,
+    fields: 'files(id, name)',
+  });
+
+  return response.data.files?.[0] || null;
+}
+
+// Create a new document for a category
+async function createDocForCategory(category) {
+  const authDrive = getAuthenticatedDrive();
+  const folderId = config.google.folderId;
+
+  const fileMetadata = {
+    name: category,
+    mimeType: 'application/vnd.google-apps.document',
+    parents: [folderId],
+  };
+
+  const response = await authDrive.files.create({
+    resource: fileMetadata,
+    fields: 'id, name',
+  });
+
+  return response.data;
+}
+
+// Append content to a Google Doc
+export async function appendToGoogleDoc(category, title, content, contact) {
+  try {
+    console.log(`Appending to Google Doc for category: ${category}`);
+
+    // Find or create the document
+    let doc = await findDocByCategory(category);
+    
+    if (!doc) {
+      console.log(`Creating new document for category: ${category}`);
+      doc = await createDocForCategory(category);
+    }
+
+    // Format the content
+    const formattedContent = `\n\n## ${title}\n${content}${contact ? `\n\nליצירת קשר: ${contact}` : ''}\n`;
+
+    // Get authenticated docs client
+    const auth = new google.auth.GoogleAuth({
+      credentials: config.google.serviceAccount,
+      scopes: ['https://www.googleapis.com/auth/documents'],
+    });
+    
+    const docs = google.docs({ version: 'v1', auth });
+
+    // Get document to find the end index
+    const docData = await docs.documents.get({ documentId: doc.id });
+    const endIndex = docData.data.body.content[docData.data.body.content.length - 1].endIndex - 1;
+
+    // Insert text at the end
+    await docs.documents.batchUpdate({
+      documentId: doc.id,
+      requestBody: {
+        requests: [
+          {
+            insertText: {
+              location: { index: endIndex },
+              text: formattedContent,
+            },
+          },
+        ],
+      },
+    });
+
+    console.log(`Successfully appended to document: ${doc.name}`);
+    return true;
+  } catch (error) {
+    console.error('Error appending to Google Doc:', error.message);
+    throw error;
+  }
+}
