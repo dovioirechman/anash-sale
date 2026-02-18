@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { API_URL } from '../config';
 
+// Global state - persists across navigations, resets on page refresh
+let globalWhatsAppVisible = true;
+let globalWhatsAppGroups = null;
+
 // WhatsApp logo SVG
 const WhatsAppIcon = () => (
   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -9,25 +13,21 @@ const WhatsAppIcon = () => (
 );
 
 export function WhatsAppGroups() {
-  const [groups, setGroups] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [groups, setGroups] = useState(globalWhatsAppGroups || []);
+  const [loading, setLoading] = useState(!globalWhatsAppGroups);
   const [expanded, setExpanded] = useState(false);
-  const [visible, setVisible] = useState(() => {
-    // Check sessionStorage - defaults to true (open) on new session
-    const saved = sessionStorage.getItem('whatsapp-visible');
-    return saved === null ? true : saved === 'true';
-  });
+  const [visible, setVisible] = useState(globalWhatsAppVisible);
   const sectionRef = useRef(null);
 
-  // Save visibility state to sessionStorage (persists only during session)
+  // Update global state and local state
   const handleClose = () => {
+    globalWhatsAppVisible = false;
     setVisible(false);
-    sessionStorage.setItem('whatsapp-visible', 'false');
   };
 
   const handleOpen = () => {
+    globalWhatsAppVisible = true;
     setVisible(true);
-    sessionStorage.setItem('whatsapp-visible', 'true');
     // Scroll to WhatsApp section with offset for header
     setTimeout(() => {
       if (sectionRef.current) {
@@ -38,10 +38,17 @@ export function WhatsAppGroups() {
   };
 
   useEffect(() => {
+    if (globalWhatsAppGroups) {
+      setGroups(globalWhatsAppGroups);
+      setLoading(false);
+      return;
+    }
+    
     async function fetchGroups() {
       try {
         const res = await fetch(`${API_URL}/articles?topic=קבוצות וואטסאפ`);
         const data = await res.json();
+        globalWhatsAppGroups = data;
         setGroups(data);
       } catch (err) {
         console.error('Error fetching WhatsApp groups:', err);

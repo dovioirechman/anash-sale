@@ -47,38 +47,42 @@ export function DismissableBannerAds() {
   };
 }
 
-// Helper to get hidden ads from sessionStorage
-function getHiddenAds() {
-  const saved = sessionStorage.getItem('hidden-banner-ads');
-  return saved ? JSON.parse(saved) : [];
-}
+// Global state - persists across navigations, resets on page refresh
+let globalHiddenAds = [];
+let globalAdsCache = null;
+let globalAdsFetched = false;
 
-// Hook version for easier use - tracks each ad separately
+// Hook version for easier use - state persists during navigation, resets on refresh
 export function useBannerAds() {
-  const [ads, setAds] = useState([]);
-  const [, forceUpdate] = useState(0);
+  const [ads, setAds] = useState(globalAdsCache || []);
+  const [hiddenAds, setHiddenAds] = useState(globalHiddenAds);
 
   useEffect(() => {
+    // Always fetch if not fetched yet in this session
+    if (globalAdsFetched && globalAdsCache) {
+      setAds(globalAdsCache);
+      return;
+    }
+    
     fetch(`${API_URL}/ads`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
+          globalAdsCache = data;
+          globalAdsFetched = true;
           setAds(data);
+          console.log('Loaded ads:', data.length);
         }
       })
       .catch(err => console.error('Error fetching ads:', err));
   }, []);
 
   const dismissAd = (index) => {
-    const hidden = getHiddenAds();
-    if (!hidden.includes(index)) {
-      hidden.push(index);
-      sessionStorage.setItem('hidden-banner-ads', JSON.stringify(hidden));
-      forceUpdate(n => n + 1); // Trigger re-render
-    }
+    globalHiddenAds = [...globalHiddenAds, index];
+    setHiddenAds([...globalHiddenAds]);
   };
 
-  const isAdVisible = (index) => !getHiddenAds().includes(index);
+  const isAdVisible = (index) => !globalHiddenAds.includes(index);
 
   return { ads, isAdVisible, dismissAd };
 }

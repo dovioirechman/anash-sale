@@ -15,23 +15,29 @@ function parseAdFilename(filename) {
   
   // Split by ___ (triple underscore) to separate URL from description
   const parts = nameWithoutExt.split('___');
-  if (parts.length < 1) return null;
   
   let urlPart = parts[0];
   const description = parts[1] || '';
   
-  // Convert back to proper URL
-  // --- becomes ://
-  // __ becomes /
-  let url = urlPart
-    .replace(/---/g, '://')
-    .replace(/__/g, '/');
+  // Check if this looks like a URL pattern (contains --- or __)
+  const hasUrlPattern = urlPart.includes('---') || urlPart.includes('__');
   
-  // Add https if no protocol
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    url = 'https://' + url;
+  let url = null;
+  if (hasUrlPattern) {
+    // Convert back to proper URL
+    // --- becomes ://
+    // __ becomes /
+    url = urlPart
+      .replace(/---/g, '://')
+      .replace(/__/g, '/');
+    
+    // Add https if no protocol
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
   }
   
+  // Always return something - ads without URLs are still valid (just no link)
   return { url, description };
 }
 
@@ -66,15 +72,13 @@ async function fetchAdsFromFolder(folderName) {
       const parsed = parseAdFilename(file.name);
       if (!parsed) continue;
 
-      // For GIFs, use direct link to preserve animation
-      const isGif = file.mimeType === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
+      // Use thumbnailLink for all images (works better with CORS)
+      // For GIFs, the thumbnail will be static but at least it loads
       let imageUrl;
-      if (isGif) {
-        imageUrl = `https://drive.google.com/uc?export=view&id=${file.id}`;
-      } else if (file.thumbnailLink) {
-        imageUrl = file.thumbnailLink.replace(/=s\d+/, '=s1000');
+      if (file.thumbnailLink) {
+        imageUrl = file.thumbnailLink.replace(/=s\d+/, '=s1600');
       } else {
-        imageUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;
+        imageUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1600`;
       }
       
       console.log(`Ad: ${file.name} -> ${imageUrl}`);

@@ -163,13 +163,20 @@ async function fetchWhatsAppGroups() {
 function parseAdFilename(filename) {
   const nameWithoutExt = filename.replace(/\.[^.]+$/, '');
   const parts = nameWithoutExt.split('___');
-  if (parts.length < 1) return null;
   let urlPart = parts[0];
   const description = parts[1] || '';
-  let url = urlPart.replace(/---/g, '://').replace(/__/g, '/');
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    url = 'https://' + url;
+  
+  // Check if this looks like a URL pattern (contains --- or __)
+  const hasUrlPattern = urlPart.includes('---') || urlPart.includes('__');
+  
+  let url = null;
+  if (hasUrlPattern) {
+    url = urlPart.replace(/---/g, '://').replace(/__/g, '/');
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
   }
+  
   return { url, description };
 }
 
@@ -193,15 +200,13 @@ async function fetchAdsFromFolder(folderName) {
     const ads = [];
     for (const file of imagesResponse.data.files || []) {
       const parsed = parseAdFilename(file.name);
-      if (!parsed) continue;
       
-      // For GIFs, use direct link to preserve animation
-      const isGif = file.mimeType === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
+      // Use thumbnailLink for all images (works better with CORS)
       let imageUrl;
-      if (isGif) {
-        imageUrl = `https://drive.google.com/uc?export=view&id=${file.id}`;
+      if (file.thumbnailLink) {
+        imageUrl = file.thumbnailLink.replace(/=s\d+/, '=s1600');
       } else {
-        imageUrl = file.thumbnailLink ? file.thumbnailLink.replace(/=s\d+/, '=s1600') : `https://drive.google.com/uc?export=view&id=${file.id}`;
+        imageUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1600`;
       }
       
       let position = 'middle';
@@ -209,7 +214,7 @@ async function fetchAdsFromFolder(folderName) {
       if (lowerName.includes('צד') || lowerName.includes('side')) position = 'side';
       else if (lowerName.includes('עליון') || lowerName.includes('top')) position = 'top';
 
-      ads.push({ id: file.id, imageUrl, targetUrl: parsed.url, description: parsed.description, position });
+      ads.push({ id: file.id, imageUrl, targetUrl: parsed.url, description: parsed.description || '', position });
     }
     return ads;
   } catch (error) {
