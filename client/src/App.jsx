@@ -204,6 +204,9 @@ export default function App() {
       </div>
       
       <div className="hero-banner">
+        <video className="hero-video" autoPlay muted loop playsInline>
+          <source src="/banner.mp4" type="video/mp4" />
+        </video>
         <div className="hero-overlay"></div>
         <div className="hero-content">
             <h1>הלוח <span className="hero-highlight">הווירטואלי</span> של <span className="hero-anash">אנ"ש</span></h1>
