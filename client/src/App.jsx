@@ -168,6 +168,11 @@ export default function App() {
           </div>
 
           <div className="header-buttons">
+            {isAdminLoggedIn() && (
+              <button className="admin-btn" onClick={() => setShowAdminPage(true)}>
+                <span className="material-icons-outlined">admin_panel_settings</span> ניהול
+              </button>
+            )}
             <button className="publish-btn" onClick={() => setShowPublishForm(true)}>
               <span className="material-icons-outlined">add_circle_outline</span> פרסם מודעה
             </button>
@@ -179,11 +184,6 @@ export default function App() {
             >
               <span className="material-icons-outlined">storefront</span> לפרסום עסקי
             </a>
-            {isAdminLoggedIn() && (
-              <button className="admin-btn" onClick={() => setShowAdminPage(true)}>
-                <span className="material-icons-outlined">admin_panel_settings</span> ניהול
-              </button>
-            )}
           </div>
         </div>
       </div>

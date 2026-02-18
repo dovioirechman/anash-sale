@@ -55,10 +55,11 @@ ${firstParagraph}
     <div className="article-view">
       <div className="article-actions">
         <button className="back-btn" onClick={onBack}>
-          ← חזרה
+          <span className="material-icons-outlined">arrow_forward</span> חזרה
         </button>
-        <button className="copy-btn" onClick={handleCopy}>
-          {copied ? '✓ הועתק!' : '📋 העתק לשיתוף'}
+        <button className="share-btn" onClick={handleCopy}>
+          <span className="material-icons-outlined">{copied ? 'check' : 'share'}</span>
+          {copied ? 'הועתק!' : 'שתף'}
         </button>
       </div>
       <article>
