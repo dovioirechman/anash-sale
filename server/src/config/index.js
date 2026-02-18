@@ -6,4 +6,7 @@ export const config = {
   google: {
     apiKey: process.env.GOOGLE_API_KEY,
   },
+  admin: {
+    password: process.env.ADMIN_PASSWORD,
+  },
 };

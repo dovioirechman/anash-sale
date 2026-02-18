@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useArticles, isApartmentCategory } from './hooks/useArticles';
 import { fetchArticle, fetchArticles } from './api/articles';
 import { TopicFilter } from './components/TopicFilter';
@@ -6,6 +6,7 @@ import { CityFilter } from './components/CityFilter';
 import { ArticleCard } from './components/ArticleCard';
 import { ArticleView } from './components/ArticleView';
 import { PublishForm } from './components/PublishForm';
+import { AdminPage, isAdminLoggedIn } from './components/AdminPage';
 import { AdBanner, SidebarAds, useBannerAds } from './components/AdBanner';
 import { AdsPage } from './components/AdsPage';
 import { WhatsAppGroups } from './components/WhatsAppGroups';
@@ -28,6 +29,21 @@ export default function App() {
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [articleLoading, setArticleLoading] = useState(false);
   const [showPublishForm, setShowPublishForm] = useState(false);
+  const [showAdminPage, setShowAdminPage] = useState(false);
+  
+  // Check for admin access via URL hash
+  useEffect(() => {
+    const checkAdminAccess = () => {
+      if (window.location.hash === '#admin') {
+        setShowAdminPage(true);
+        // Remove hash from URL
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    };
+    checkAdminAccess();
+    window.addEventListener('hashchange', checkAdminAccess);
+    return () => window.removeEventListener('hashchange', checkAdminAccess);
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -128,6 +144,11 @@ export default function App() {
     );
   }
 
+  // If admin page is shown and logged in, render only admin page
+  if (showAdminPage && isAdminLoggedIn()) {
+    return <AdminPage onClose={() => setShowAdminPage(false)} />;
+  }
+
   return (
     <div className="app">
       {showPublishForm && (
@@ -135,6 +156,10 @@ export default function App() {
           categories={topics.filter(t => !EXCLUDED_CATEGORIES.includes(t))} 
           onClose={() => setShowPublishForm(false)} 
         />
+      )}
+      
+      {showAdminPage && (
+        <AdminPage onClose={() => setShowAdminPage(false)} />
       )}
       <div className="header-top-sticky">
         <div className="header-content">
@@ -154,6 +179,11 @@ export default function App() {
             >
               <span className="material-icons-outlined">storefront</span> לפרסום עסקי
             </a>
+            {isAdminLoggedIn() && (
+              <button className="admin-btn" onClick={() => setShowAdminPage(true)}>
+                <span className="material-icons-outlined">admin_panel_settings</span> ניהול
+              </button>
+            )}
           </div>
         </div>
       </div>

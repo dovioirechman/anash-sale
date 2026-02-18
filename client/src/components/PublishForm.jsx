@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_URL } from '../config';
 
 export function PublishForm({ categories, onClose }) {
   const [category, setCategory] = useState('');
@@ -21,19 +22,16 @@ export function PublishForm({ categories, onClose }) {
     setError('');
 
     try {
-      // Use FormSubmit.co service (free, no signup required)
-      const response = await fetch('https://formsubmit.co/ajax/dovi.lod@gmail.com', {
+      const response = await fetch(`${API_URL}/admin/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
         },
         body: JSON.stringify({
-          _subject: `מודעה חדשה - ${category}: ${title}`,
-          קטגוריה: category,
-          כותרת: title,
-          תוכן: content,
-          'פרטי קשר': contact || 'לא צוין',
+          category,
+          title,
+          content,
+          contact: contact || '',
         })
       });
 
@@ -44,7 +42,7 @@ export function PublishForm({ categories, onClose }) {
         throw new Error('שגיאה בשליחה');
       }
     } catch (err) {
-      setError('שגיאה בשליחה. נסה שוב או שלח ישירות למייל dovi.lod@gmail.com');
+      setError('שגיאה בשליחה. נסה שוב מאוחר יותר.');
       console.error('Submit error:', err);
     } finally {
       setSending(false);
