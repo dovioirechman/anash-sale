@@ -216,10 +216,18 @@ body {
 .hero-banner {
   position: relative;
   height: 280px;
-  background: url('/banner.png') center 30%/cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.hero-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/banner.png') center 30%/cover no-repeat;
+  opacity: 0.95;
+  z-index: 0;
 }
 
 .hero-overlay {
