@@ -215,8 +215,8 @@ body {
 /* Hero Banner */
 .hero-banner {
   position: relative;
-  height: 200px;
-  background: url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1600&q=80') center/cover no-repeat;
+  height: 280px;
+  background: url('/banner.png') center 30%/cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -225,7 +225,7 @@ body {
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(26, 54, 93, 0.35) 0%, rgba(26, 95, 180, 0.3) 100%);
+  background: linear-gradient(135deg, rgba(26, 54, 93, 0.1) 0%, rgba(26, 95, 180, 0.08) 100%);
 }
 
 .hero-content {
@@ -270,11 +270,22 @@ body {
   display: flex;
   max-width: 260px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.7);
   border-radius: var(--radius-full);
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(26, 95, 180, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.hero-search:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.hero-search:focus-within {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .search-input {
@@ -305,12 +316,12 @@ body {
 
 .search-btn .material-icons-outlined {
   font-size: 1.1rem;
-  color: var(--secondary);
+  color: var(--primary);
   transition: color 0.2s ease;
 }
 
 .search-btn:hover .material-icons-outlined {
-  color: var(--primary);
+  color: var(--secondary);
 }
 
 /* Search Results */
