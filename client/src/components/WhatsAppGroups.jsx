@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { API_URL } from '../config';
 
 // WhatsApp logo SVG
@@ -13,20 +13,28 @@ export function WhatsAppGroups() {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [visible, setVisible] = useState(() => {
-    // Check localStorage for saved state
-    const saved = localStorage.getItem('whatsapp-visible');
+    // Check sessionStorage - defaults to true (open) on new session
+    const saved = sessionStorage.getItem('whatsapp-visible');
     return saved === null ? true : saved === 'true';
   });
+  const sectionRef = useRef(null);
 
-  // Save visibility state to localStorage
+  // Save visibility state to sessionStorage (persists only during session)
   const handleClose = () => {
     setVisible(false);
-    localStorage.setItem('whatsapp-visible', 'false');
+    sessionStorage.setItem('whatsapp-visible', 'false');
   };
 
   const handleOpen = () => {
     setVisible(true);
-    localStorage.setItem('whatsapp-visible', 'true');
+    sessionStorage.setItem('whatsapp-visible', 'true');
+    // Scroll to WhatsApp section with offset for header
+    setTimeout(() => {
+      if (sectionRef.current) {
+        const top = sectionRef.current.getBoundingClientRect().top + window.scrollY - 150;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    }, 100);
   };
 
   useEffect(() => {
@@ -59,7 +67,7 @@ export function WhatsAppGroups() {
   const displayGroups = expanded ? groups : groups.slice(0, 4);
 
   return (
-    <div className="whatsapp-section">
+    <div className="whatsapp-section" ref={sectionRef}>
       <button className="whatsapp-close" onClick={handleClose} aria-label="סגור">
         ✕
       </button>

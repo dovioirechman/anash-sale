@@ -6,7 +6,7 @@ import { CityFilter } from './components/CityFilter';
 import { ArticleCard } from './components/ArticleCard';
 import { ArticleView } from './components/ArticleView';
 import { PublishForm } from './components/PublishForm';
-import { AdBanner, SidebarAds } from './components/AdBanner';
+import { AdBanner, SidebarAds, useBannerAds } from './components/AdBanner';
 import { AdsPage } from './components/AdsPage';
 import { WhatsAppGroups } from './components/WhatsAppGroups';
 import { HomePage } from './components/HomePage';
@@ -25,6 +25,9 @@ export default function App() {
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [articleLoading, setArticleLoading] = useState(false);
   const [showPublishForm, setShowPublishForm] = useState(false);
+  
+  // Banner ads state (shared across all pages)
+  const { ads: bannerAds, isAdVisible, dismissAd } = useBannerAds();
   
   // Only fetch articles if on a specific category
   const { articles, topics, cities, loading, error } = useArticles(
@@ -137,15 +140,49 @@ export default function App() {
               <p>אין מודעות להצגה</p>
             </div>
           ) : (
-            <div className="articles-grid">
-              {articles.map((article) => (
-                <ArticleCard 
-                  key={article.id} 
-                  article={article} 
-                  onClick={handleArticleClick}
-                />
-              ))}
-            </div>
+            <>
+              {/* Top Banner Ad */}
+              {isAdVisible(0) && bannerAds.length > 0 && bannerAds[0]?.imageUrl && (
+                <div className="home-banner-ad">
+                  <button className="banner-close" onClick={() => dismissAd(0)} aria-label="סגור">✕</button>
+                  <a href={bannerAds[0].targetUrl || '#'} target="_blank" rel="noopener noreferrer">
+                    <img src={bannerAds[0].imageUrl} alt={bannerAds[0].description || 'פרסומת'} />
+                  </a>
+                </div>
+              )}
+              
+              <div className="articles-grid">
+                {articles.slice(0, 8).map((article) => (
+                  <ArticleCard 
+                    key={article.id} 
+                    article={article} 
+                    onClick={handleArticleClick}
+                  />
+                ))}
+              </div>
+              
+              {/* Middle Banner Ad */}
+              {isAdVisible(1) && bannerAds.length > 1 && bannerAds[1]?.imageUrl && articles.length > 8 && (
+                <div className="home-banner-ad">
+                  <button className="banner-close" onClick={() => dismissAd(1)} aria-label="סגור">✕</button>
+                  <a href={bannerAds[1].targetUrl || '#'} target="_blank" rel="noopener noreferrer">
+                    <img src={bannerAds[1].imageUrl} alt={bannerAds[1].description || 'פרסומת'} />
+                  </a>
+                </div>
+              )}
+              
+              {articles.length > 8 && (
+                <div className="articles-grid">
+                  {articles.slice(8).map((article) => (
+                    <ArticleCard 
+                      key={article.id} 
+                      article={article} 
+                      onClick={handleArticleClick}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </main>
 

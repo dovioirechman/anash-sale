@@ -34,14 +34,13 @@ export function ArticleView({ article, onBack }) {
 
   const handleCopy = async () => {
     const firstParagraph = getFirstParagraph(article.content);
-    const whatsappLink = getWhatsAppLink();
     
     const textToCopy = `${article.title}
 
 ${firstParagraph}
 
 --
-ליצירת קשר עם עורך האתר: ${whatsappLink}`;
+לאתר אנ״ש סייל: https://anash-sale.vercel.app/`;
 
     try {
       await navigator.clipboard.writeText(textToCopy);

@@ -194,7 +194,15 @@ async function fetchAdsFromFolder(folderName) {
     for (const file of imagesResponse.data.files || []) {
       const parsed = parseAdFilename(file.name);
       if (!parsed) continue;
-      let imageUrl = file.thumbnailLink ? file.thumbnailLink.replace(/=s\d+/, '=s1600') : `https://drive.google.com/uc?export=view&id=${file.id}`;
+      
+      // For GIFs, use direct link to preserve animation
+      const isGif = file.mimeType === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
+      let imageUrl;
+      if (isGif) {
+        imageUrl = `https://drive.google.com/uc?export=view&id=${file.id}`;
+      } else {
+        imageUrl = file.thumbnailLink ? file.thumbnailLink.replace(/=s\d+/, '=s1600') : `https://drive.google.com/uc?export=view&id=${file.id}`;
+      }
       
       let position = 'middle';
       const lowerName = file.name.toLowerCase();

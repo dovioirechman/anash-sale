@@ -66,9 +66,12 @@ async function fetchAdsFromFolder(folderName) {
       const parsed = parseAdFilename(file.name);
       if (!parsed) continue;
 
-      // Use the thumbnail link from Drive API or fallback
+      // For GIFs, use direct link to preserve animation
+      const isGif = file.mimeType === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
       let imageUrl;
-      if (file.thumbnailLink) {
+      if (isGif) {
+        imageUrl = `https://drive.google.com/uc?export=view&id=${file.id}`;
+      } else if (file.thumbnailLink) {
         imageUrl = file.thumbnailLink.replace(/=s\d+/, '=s1000');
       } else {
         imageUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { API_URL } from '../config';
 import { ArticleCard } from './ArticleCard';
 import { WhatsAppGroups } from './WhatsAppGroups';
+import { useBannerAds } from './AdBanner';
 
 // Category icons
 const CATEGORY_ICONS = {
@@ -20,8 +21,8 @@ const CATEGORY_ICONS = {
 
 export function HomePage({ onArticleClick, onCategoryClick }) {
   const [sections, setSections] = useState([]);
-  const [bannerAds, setBannerAds] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { ads: bannerAds, isAdVisible, dismissAd } = useBannerAds();
 
   useEffect(() => {
     async function fetchHomeData() {
@@ -59,15 +60,6 @@ export function HomePage({ onArticleClick, onCategoryClick }) {
           });
 
         setSections(sectionsArray);
-
-        // Fetch banner ads from מודעות folder
-        try {
-          const adsRes = await fetch(`${API_URL}/ads`);
-          const ads = await adsRes.json();
-          setBannerAds(ads || []);
-        } catch (e) {
-          console.log('No banner ads found');
-        }
       } catch (err) {
         console.error('Error fetching home data:', err);
       } finally {
@@ -85,6 +77,23 @@ export function HomePage({ onArticleClick, onCategoryClick }) {
     <div className="home-page">
       {/* WhatsApp Groups */}
       <WhatsAppGroups />
+
+      {/* Top Banner Ad */}
+      {isAdVisible(0) && bannerAds.length > 0 && bannerAds[0]?.imageUrl && (
+        <div className="home-banner-ad">
+          <button className="banner-close" onClick={() => dismissAd(0)} aria-label="סגור">✕</button>
+          <a 
+            href={bannerAds[0].targetUrl || '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img 
+              src={bannerAds[0].imageUrl}
+              alt={bannerAds[0].description || 'פרסומת'}
+            />
+          </a>
+        </div>
+      )}
 
       {/* Category Sections */}
       {sections.map((section, index) => (
@@ -113,25 +122,22 @@ export function HomePage({ onArticleClick, onCategoryClick }) {
             </div>
           </section>
 
-          {/* Insert banner ad after every 2 sections */}
-          {bannerAds.length > 0 && (index + 1) % 2 === 0 && index < sections.length - 1 && (() => {
-            const ad = bannerAds[Math.floor(index / 2) % bannerAds.length];
-            if (!ad || !ad.imageUrl) return null;
-            return (
-              <div className="home-banner-ad">
-                <a 
-                  href={ad.targetUrl || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <img 
-                    src={ad.imageUrl}
-                    alt={ad.description || 'פרסומת'}
-                  />
-                </a>
-              </div>
-            );
-          })()}
+          {/* Insert second banner ad after section 2 */}
+          {isAdVisible(1) && bannerAds.length > 1 && index === 1 && bannerAds[1]?.imageUrl && (
+            <div className="home-banner-ad">
+              <button className="banner-close" onClick={() => dismissAd(1)} aria-label="סגור">✕</button>
+              <a 
+                href={bannerAds[1].targetUrl || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img 
+                  src={bannerAds[1].imageUrl}
+                  alt={bannerAds[1].description || 'פרסומת'}
+                />
+              </a>
+            </div>
+          )}
         </div>
       ))}
 
