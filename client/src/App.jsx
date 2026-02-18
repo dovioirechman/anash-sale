@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useArticles, isApartmentCategory } from './hooks/useArticles';
 import { fetchArticle, fetchArticles } from './api/articles';
 import { TopicFilter } from './components/TopicFilter';
@@ -30,6 +30,21 @@ export default function App() {
   const [articleLoading, setArticleLoading] = useState(false);
   const [showPublishForm, setShowPublishForm] = useState(false);
   const [showAdminPage, setShowAdminPage] = useState(false);
+  const headerRef = useRef(null);
+  
+  // Set header height CSS variable for sticky categories
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        const height = headerRef.current.offsetHeight;
+        document.documentElement.style.setProperty('--header-height', `${height}px`);
+      }
+    };
+    
+    updateHeaderHeight();
+    window.addEventListener('resize', updateHeaderHeight);
+    return () => window.removeEventListener('resize', updateHeaderHeight);
+  }, []);
   
   // Check for admin access via URL hash
   useEffect(() => {
@@ -161,10 +176,10 @@ export default function App() {
       {showAdminPage && (
         <AdminPage onClose={() => setShowAdminPage(false)} />
       )}
-      <div className="header-top-sticky">
+      <div className="header-top-sticky" ref={headerRef}>
         <div className="header-content">
           <div className="brand" onClick={() => setSelectedTopic(HOME_TOPIC)} style={{ cursor: 'pointer' }}>
-            <img src="/logo.png" alt="אנש סייל" className="logo" />
+            <img src="/logo.png" alt="אנ״ש סייל" className="logo" />
           </div>
 
           <div className="header-buttons">
@@ -191,11 +206,11 @@ export default function App() {
       <div className="hero-banner">
         <div className="hero-overlay"></div>
         <div className="hero-content">
-            <h1>הלוח <span className="hero-highlight">הווירטואלי</span> של <span className="hero-anash">אנ״ש</span></h1>
+            <h1>הלוח <span className="hero-highlight">הווירטואלי</span> של <span className="hero-anash">אנ"ש</span></h1>
             <div className="hero-search">
               <input 
                 type="text" 
-                placeholder="חפש מודעות" 
+                placeholder="חפש מודעות..." 
                 className="search-input"
                 value={searchQuery}
                 onChange={handleSearchChange}

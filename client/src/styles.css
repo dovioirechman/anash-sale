@@ -91,7 +91,7 @@ body {
 .header-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0.4rem 2rem;
+  padding: 0.75rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -106,6 +106,65 @@ body {
   height: 60px;
   width: auto;
   object-fit: contain;
+}
+
+/* Text Logo */
+.logo-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-icon .logo-img {
+  height: 40px;
+  width: auto;
+}
+
+.logo-text-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-text {
+  display: flex;
+  align-items: baseline;
+  gap: 0.1rem;
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  font-size: 2rem;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.logo-anash {
+  color: var(--secondary);
+}
+
+.logo-sale {
+  color: var(--primary);
+}
+
+.logo-stripe {
+  width: 100%;
+  height: 2px;
+  margin-top: 1px;
+  border-radius: 1px;
+  background: linear-gradient(to left, rgba(249, 115, 22, 0.6), rgba(37, 99, 235, 0.6));
+}
+
+.logo-tagline {
+  font-family: 'Rubik', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin-top: 3px;
 }
 
 .header-buttons {
@@ -196,7 +255,7 @@ body {
 }
 
 .hero-anash {
-  color: #ffd699;
+  color: white;
   font-weight: 700;
 }
 
@@ -211,7 +270,7 @@ body {
   display: flex;
   max-width: 260px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.65);
   border-radius: var(--radius-full);
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(26, 95, 180, 0.15);
@@ -231,7 +290,7 @@ body {
 }
 
 .search-input::placeholder {
-  color: #888;
+  color: #444;
 }
 
 .search-btn {
@@ -273,7 +332,7 @@ body {
   background: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: sticky;
-  top: 68px; /* Below the header-top (logo 60px + padding 0.4rem) */
+  top: var(--header-height, 65px);
   z-index: 99;
   margin-top: 0;
 }
@@ -282,17 +341,34 @@ body {
   margin-bottom: 0;
   border-radius: 0;
   box-shadow: none;
+  padding: 1rem 1rem;
 }
 
 /* Mobile Header */
 @media (max-width: 768px) {
   .header-content {
-    padding: 0.5rem 0.75rem;
+    padding: 0.65rem 0.75rem;
     justify-content: space-between;
   }
   
   .logo {
     height: 50px;
+  }
+  
+  .logo-text {
+    font-size: 1.5rem;
+  }
+  
+  .logo-icon .logo-img {
+    height: 34px;
+  }
+  
+  .logo-stripe {
+    height: 3px;
+  }
+  
+  .logo-tagline {
+    font-size: 0.6rem;
   }
   
   .header-buttons {
@@ -335,8 +411,8 @@ body {
     padding: 0.5rem 0.6rem;
   }
   
-  .categories-sticky {
-    top: 60px; /* Mobile: logo 50px + padding */
+  .categories-sticky .topic-filter {
+    padding: 0.85rem 0.75rem;
   }
 }
 
@@ -384,8 +460,8 @@ body {
 }
 
 .topic-filter button:hover {
-  background: var(--primary);
-  color: white;
+  background: #e8f4fc;
+  color: var(--primary);
 }
 
 .topic-filter button.active {
@@ -1126,7 +1202,7 @@ body {
 
 @media (max-width: 480px) {
   .header-content {
-    padding: 0.4rem 0.5rem;
+    padding: 0.6rem 0.5rem;
     justify-content: space-between;
   }
   
@@ -1149,8 +1225,30 @@ body {
     height: 45px;
   }
   
-  .categories-sticky {
-    top: 55px;
+  .logo-text {
+    font-size: 1.2rem;
+  }
+  
+  .logo-icon .logo-img {
+    height: 28px;
+  }
+  
+  .logo-container {
+    gap: 0.3rem;
+  }
+  
+  .logo-stripe {
+    height: 2px;
+    margin-top: 2px;
+  }
+  
+  .logo-tagline {
+    font-size: 0.5rem;
+    margin-top: 1px;
+  }
+  
+  .categories-sticky .topic-filter {
+    padding: 0.75rem 0.5rem;
   }
 }
 
@@ -1533,9 +1631,10 @@ body {
 .admin-btn {
   background: #f3f4f6;
   border: none;
-  padding: 0.4rem 0.75rem;
+  padding: 0.5rem 1rem;
   border-radius: var(--radius-full);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
   color: var(--primary);
   cursor: pointer;
   transition: all 0.2s;
@@ -1550,7 +1649,7 @@ body {
 }
 
 .admin-btn .material-icons-outlined {
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 .admin-loading,
