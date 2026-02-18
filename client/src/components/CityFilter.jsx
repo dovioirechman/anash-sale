@@ -5,7 +5,7 @@ export function CityFilter({ cities, selected, onSelect }) {
 
   return (
     <div className="city-filter">
-      <span className="city-filter-label">🏙️ סנן לפי עיר:</span>
+      <span className="city-filter-label"><span className="material-icons-outlined">location_on</span> סנן לפי עיר:</span>
       <div className="city-buttons">
         <button 
           className={!selected ? 'active' : ''} 

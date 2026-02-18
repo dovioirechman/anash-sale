@@ -1,24 +1,26 @@
-// Map topics to icons
+// Map topics to Material Icons (using outlined style)
 const TOPIC_ICONS = {
-  'דירות': '🏠',
-  'דירה': '🏠',
-  'משרות': '💼',
-  'משרה': '💼',
-  'רכבים': '🚗',
-  'רכב': '🚗',
-  'ריהוט': '🪑',
-  'אלקטרוניקה': '📱',
-  'ביגוד': '👔',
-  'ספרים': '📚',
-  'כללי': '📦',
-  'חדשות חב״ד': '📰',
-  'חדשות כלכלה': '💰',
-  'נדל״ן בלוד': '🏢',
-  'קבוצות וואטסאפ': '💬',
+  'דירות למכירה': 'home',
+  'דירות להשכרה': 'apartment',
+  'דירות': 'home',
+  'דירה': 'home',
+  'משרות': 'work_outline',
+  'משרה': 'work_outline',
+  'רכבים': 'directions_car',
+  'רכב': 'directions_car',
+  'ריהוט': 'chair',
+  'אלקטרוניקה': 'devices',
+  'ביגוד': 'checkroom',
+  'ספרים': 'menu_book',
+  'כללי': 'category',
+  'חדשות חב״ד': 'article',
+  'חדשות כלכלה': 'trending_up',
+  'נדל״ן בלוד': 'location_city',
+  'קבוצות וואטסאפ': 'forum',
 };
 
 export function getTopicIcon(topic) {
-  return TOPIC_ICONS[topic] || '📋';
+  return TOPIC_ICONS[topic] || 'label';
 }
 
 export function TopicFilter({ topics, selected, onSelect, adsTopic, homeTopic }) {
@@ -29,14 +31,14 @@ export function TopicFilter({ topics, selected, onSelect, adsTopic, homeTopic })
         className={selected === homeTopic ? 'active' : ''} 
         onClick={() => onSelect(homeTopic)}
       >
-        🏠 ראשי
+        <span className="material-icons-outlined">home</span> ראשי
       </button>
       {/* Ads tab */}
       <button 
         className={selected === adsTopic ? 'active' : ''} 
         onClick={() => onSelect(adsTopic)}
       >
-        🎯 פרסומות
+        <span className="material-icons-outlined">campaign</span> פרסומות
       </button>
       {topics.map((topic) => (
         <button
@@ -44,7 +46,7 @@ export function TopicFilter({ topics, selected, onSelect, adsTopic, homeTopic })
           className={selected === topic ? 'active' : ''}
           onClick={() => onSelect(topic)}
         >
-          {getTopicIcon(topic)} {topic}
+          <span className="material-icons-outlined">{getTopicIcon(topic)}</span> {topic}
         </button>
       ))}
     </div>

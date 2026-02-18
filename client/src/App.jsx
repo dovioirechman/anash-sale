@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useArticles, isApartmentCategory } from './hooks/useArticles';
-import { fetchArticle } from './api/articles';
+import { fetchArticle, fetchArticles } from './api/articles';
 import { TopicFilter } from './components/TopicFilter';
 import { CityFilter } from './components/CityFilter';
 import { ArticleCard } from './components/ArticleCard';
@@ -19,12 +19,18 @@ const EXCLUDED_CATEGORIES = ['חדשות חב״ד', 'חדשות כלכלה', 'נ
 const ADS_TOPIC = '__פרסומות__';
 const HOME_TOPIC = '__ראשי__';
 
+const SEARCH_TOPIC = '__חיפוש__';
+
 export default function App() {
   const [selectedTopic, setSelectedTopic] = useState(HOME_TOPIC); // Default to home page
+  const [previousTopic, setPreviousTopic] = useState(HOME_TOPIC); // Track previous topic for search cancel
   const [selectedCity, setSelectedCity] = useState(null);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [articleLoading, setArticleLoading] = useState(false);
   const [showPublishForm, setShowPublishForm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   
   // Banner ads state (shared across all pages)
   const { ads: bannerAds, isAdVisible, dismissAd } = useBannerAds();
@@ -39,6 +45,57 @@ export default function App() {
   const handleTopicSelect = (topic) => {
     setSelectedTopic(topic);
     setSelectedCity(null); // Reset city when topic changes
+    setSearchQuery(''); // Clear search when changing topic
+  };
+
+  // Search functionality
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    // Save current topic before searching
+    if (selectedTopic !== SEARCH_TOPIC) {
+      setPreviousTopic(selectedTopic);
+    }
+    
+    setIsSearching(true);
+    setSelectedTopic(SEARCH_TOPIC);
+    
+    try {
+      const allArticles = await fetchArticles(); // Fetch all articles
+      
+      // Split query into words for flexible search
+      const queryWords = searchQuery.trim().toLowerCase().split(/\s+/).filter(w => w.length > 1);
+      
+      const filtered = allArticles.filter(article => {
+        const searchText = `${article.title || ''} ${article.summary || ''} ${article.content || ''}`.toLowerCase();
+        // Article matches if ALL words are found (anywhere in the text)
+        return queryWords.every(word => searchText.includes(word));
+      });
+      
+      setSearchResults(filtered);
+    } catch (e) {
+      console.error('Search error:', e);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    
+    // If search is cleared and we're in search mode, go back to previous topic
+    if (!value.trim() && selectedTopic === SEARCH_TOPIC) {
+      setSelectedTopic(previousTopic);
+      setSearchResults([]);
+    }
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   const handleArticleClick = async (article) => {
@@ -79,14 +136,15 @@ export default function App() {
           onClose={() => setShowPublishForm(false)} 
         />
       )}
-      <header className="main-header">
+      <div className="header-top-sticky">
         <div className="header-content">
           <div className="brand" onClick={() => setSelectedTopic(HOME_TOPIC)} style={{ cursor: 'pointer' }}>
             <img src="/logo.png" alt="אנש סייל" className="logo" />
           </div>
+
           <div className="header-buttons">
             <button className="publish-btn" onClick={() => setShowPublishForm(true)}>
-              ➕ פרסום מודעה
+              <span className="material-icons-outlined">add_circle_outline</span> פרסם מודעה
             </button>
             <a 
               href="https://wa.me/972552929803?text=שלום%2C%20אני%20מעוניין%20בפרסום%20עסקי%20באתר"
@@ -94,11 +152,39 @@ export default function App() {
               rel="noopener noreferrer"
               className="business-btn"
             >
-              📢 לפרסום עסקי
+              <span className="material-icons-outlined">storefront</span> לפרסום עסקי
             </a>
           </div>
         </div>
-      </header>
+      </div>
+      
+      <div className="hero-banner">
+        <div className="hero-overlay"></div>
+        <div className="hero-content">
+            <h1>הלוח <span className="hero-highlight">הווירטואלי</span> של <span className="hero-anash">אנ״ש</span></h1>
+            <div className="hero-search">
+              <input 
+                type="text" 
+                placeholder="חפש מודעות" 
+                className="search-input"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onKeyDown={handleSearchKeyDown}
+              />
+              <button className="search-btn" onClick={handleSearch}>🔍</button>
+            </div>
+        </div>
+      </div>
+      
+      <div className="categories-sticky">
+        <TopicFilter 
+          topics={topics.filter(t => t !== 'קבוצות וואטסאפ')} 
+          selected={selectedTopic} 
+          onSelect={handleTopicSelect}
+          adsTopic={ADS_TOPIC}
+          homeTopic={HOME_TOPIC}
+        />
+      </div>
 
       <div className="main-layout">
         {/* Left Sidebar Ads */}
@@ -107,14 +193,6 @@ export default function App() {
         </aside>
 
         <main className="container">
-          <TopicFilter 
-            topics={topics.filter(t => t !== 'קבוצות וואטסאפ')} 
-            selected={selectedTopic} 
-            onSelect={handleTopicSelect}
-            adsTopic={ADS_TOPIC}
-            homeTopic={HOME_TOPIC}
-          />
-          
           {selectedTopic !== HOME_TOPIC && <WhatsAppGroups />}
           
           {selectedTopic && selectedTopic !== ADS_TOPIC && selectedTopic !== HOME_TOPIC && isApartmentCategory(selectedTopic) && cities.length > 0 && (
@@ -130,6 +208,30 @@ export default function App() {
               onArticleClick={handleArticleClick}
               onCategoryClick={handleTopicSelect}
             />
+          ) : selectedTopic === SEARCH_TOPIC ? (
+            isSearching ? (
+              <div className="loading"></div>
+            ) : searchResults.length === 0 ? (
+              <div className="empty-state">
+                <span className="empty-icon">🔍</span>
+                <p>לא נמצאו תוצאות עבור "{searchQuery}"</p>
+              </div>
+            ) : (
+              <>
+                <div className="search-results-header">
+                  <h2>תוצאות חיפוש: "{searchQuery}" ({searchResults.length} תוצאות)</h2>
+                </div>
+                <div className="articles-grid">
+                  {searchResults.map((article) => (
+                    <ArticleCard 
+                      key={article.id} 
+                      article={article} 
+                      onClick={handleArticleClick}
+                    />
+                  ))}
+                </div>
+              </>
+            )
           ) : selectedTopic === ADS_TOPIC ? (
             <AdsPage />
           ) : loading ? (
