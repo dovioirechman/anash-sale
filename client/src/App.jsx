@@ -171,7 +171,7 @@ export default function App() {
                 onChange={handleSearchChange}
                 onKeyDown={handleSearchKeyDown}
               />
-              <button className="search-btn" onClick={handleSearch}>🔍</button>
+              <button className="search-btn" onClick={handleSearch}><span className="material-icons-outlined">search</span></button>
             </div>
         </div>
       </div>

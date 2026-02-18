@@ -123,7 +123,7 @@ export function PublishForm({ categories, onClose }) {
           </div>
 
           <button type="submit" className="submit-btn" disabled={sending}>
-            {sending ? 'שולח...' : '📧 שלח לפרסום'}
+            {sending ? 'שולח...' : 'שלח לפרסום'}
           </button>
         </form>
       </div>
