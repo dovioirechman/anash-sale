@@ -439,5 +439,92 @@ app.get('/api/ads/page', async (req, res) => {
   }
 });
 
+// ============ ADMIN ============
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const adminSessions = new Set();
+let submissions = [];
+
+function generateAdminToken() {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
+function requireAdminAuth(req, res, next) {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token || !adminSessions.has(token)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+}
+
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  
+  if (!ADMIN_PASSWORD) {
+    return res.status(500).json({ error: 'Admin password not configured' });
+  }
+  
+  if (password === ADMIN_PASSWORD) {
+    const token = generateAdminToken();
+    adminSessions.add(token);
+    setTimeout(() => adminSessions.delete(token), 24 * 60 * 60 * 1000);
+    return res.json({ token });
+  }
+  
+  return res.status(401).json({ error: 'Invalid password' });
+});
+
+app.post('/api/admin/submit', (req, res) => {
+  try {
+    const { category, title, content, contact } = req.body;
+    if (!category || !title || !content) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    const submission = {
+      id: Date.now().toString(),
+      category,
+      title,
+      content,
+      contact: contact || '',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+    submissions.push(submission);
+    res.json({ message: 'Submission received', id: submission.id });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to submit' });
+  }
+});
+
+app.get('/api/admin/submissions', requireAdminAuth, (req, res) => {
+  res.json(submissions);
+});
+
+app.post('/api/admin/submissions/:id/approve', requireAdminAuth, async (req, res) => {
+  const submission = submissions.find(s => s.id === req.params.id);
+  if (!submission) {
+    return res.status(404).json({ error: 'Submission not found' });
+  }
+  
+  const formattedContent = `## ${submission.title}\n${submission.content}${submission.contact ? `\n\nליצירת קשר: ${submission.contact}` : ''}`;
+  submissions = submissions.filter(s => s.id !== req.params.id);
+  
+  res.json({ 
+    message: 'Submission approved',
+    published: false,
+    category: submission.category,
+    formattedContent,
+    instructions: `העתק את התוכן למסמך "${submission.category}" בגוגל דרייב`
+  });
+});
+
+app.delete('/api/admin/submissions/:id', requireAdminAuth, (req, res) => {
+  const index = submissions.findIndex(s => s.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Submission not found' });
+  }
+  submissions.splice(index, 1);
+  res.json({ message: 'Submission deleted' });
+});
+
 export default app;
 

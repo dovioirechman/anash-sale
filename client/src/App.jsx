@@ -62,6 +62,8 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchInputRef = useRef(null);
   
   // Banner ads state (shared across all pages)
   const { ads: bannerAds, isAdVisible, dismissAd } = useBannerAds();
@@ -204,22 +206,33 @@ export default function App() {
       </div>
       
       <div className="hero-banner">
-        <video className="hero-video" autoPlay muted loop playsInline>
-          <source src="/banner.mp4" type="video/mp4" />
-        </video>
         <div className="hero-overlay"></div>
         <div className="hero-content">
             <h1>הלוח <span className="hero-highlight">הווירטואלי</span> של <span className="hero-anash">אנ"ש</span></h1>
-            <div className="hero-search">
-              <input 
-                type="text" 
-                placeholder="חפש מודעות..." 
-                className="search-input"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                onKeyDown={handleSearchKeyDown}
-              />
-              <button className="search-btn" onClick={handleSearch}><span className="material-icons-outlined">search</span></button>
+            <div className={`hero-search ${isSearchOpen ? 'expanded' : ''}`}>
+              {isSearchOpen ? (
+                <>
+                  <input 
+                    type="text" 
+                    placeholder="חפש מודעות..." 
+                    className="search-input"
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    onKeyDown={handleSearchKeyDown}
+                    ref={searchInputRef}
+                    autoFocus
+                    onBlur={() => { if (!searchQuery) setIsSearchOpen(false); }}
+                  />
+                  <button className="search-btn" onClick={handleSearch}>
+                    <span className="material-icons-outlined">search</span>
+                  </button>
+                </>
+              ) : (
+                <button className="search-btn-collapsed" onClick={() => { setIsSearchOpen(true); }}>
+                  <span className="material-icons-outlined">search</span>
+                  <span>חיפוש</span>
+                </button>
+              )}
             </div>
         </div>
       </div>
