@@ -19,43 +19,9 @@ function createStableId(prefix, text) {
   return `${prefix}-${hash}`;
 }
 
-// Map Hebrew topics to colors and icons for themed images
-const topicStyles = {
-  'דירות': { bg: '4A90A4', icon: '🏠' },
-  'דירה': { bg: '4A90A4', icon: '🏠' },
-  'דירות למכירה': { bg: '3B82F6', icon: '🏡' },
-  'דירות להשכרה': { bg: '6366F1', icon: '🏢' },
-  'משרות': { bg: '7B68A6', icon: '💼' },
-  'משרה': { bg: '7B68A6', icon: '💼' },
-  'רכבים': { bg: '5D8AA8', icon: '🚗' },
-  'רכב': { bg: '5D8AA8', icon: '🚗' },
-  'ריהוט': { bg: 'A67B5B', icon: '🪑' },
-  'אלקטרוניקה': { bg: '708090', icon: '📱' },
-  'ביגוד': { bg: 'C08081', icon: '👔' },
-  'ספרים': { bg: '8B7355', icon: '📚' },
-  'כללי': { bg: '6B8E6B', icon: '📦' },
-  'חדשות חב״ד': { bg: '7C3AED', icon: '📰' },
-  'חדשות כלכלה': { bg: '059669', icon: '📈' },
-  'נדל״ן בלוד': { bg: '0891B2', icon: '🏙️' },
-  'נדל״ן': { bg: '0891B2', icon: '🏙️' },
-  'קבוצות וואטסאפ': { bg: '25D366', icon: '💬' },
-  'בעלי מקצוע': { bg: 'D97706', icon: '🔧' },
-};
-
-// Generate themed placeholder image with icon
+// Return null - let the frontend handle default icons based on category
 function generateImageUrl(topic, articleId) {
-  // Find matching style by checking if topic contains key or key contains topic
-  let style = topicStyles[topic];
-  if (!style) {
-    for (const [key, value] of Object.entries(topicStyles)) {
-      if (topic?.includes(key) || key.includes(topic)) {
-        style = value;
-        break;
-      }
-    }
-  }
-  style = style || { bg: '64748B', icon: '📋' };
-  return `https://placehold.co/800x400/${style.bg}/ffffff?text=${encodeURIComponent(style.icon)}`;
+  return null;
 }
 
 // Get content of a Google Doc
@@ -194,7 +160,7 @@ export async function fetchWhatsAppGroups() {
           link: link,
           topic: 'קבוצות וואטסאפ',
           date: new Date().toISOString(),
-          imageUrl: 'https://placehold.co/800x400/25D366/ffffff?text=📱',
+          imageUrl: null,
           isExternal: true,
         });
       }

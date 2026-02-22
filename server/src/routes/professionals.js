@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { fetchProfessionals, getCitiesFromProfessionals, getProfessionsFromProfessionals } from '../services/professionalsService.js';
+import { fetchProfessionals } from '../services/professionalsService.js';
 
 const router = Router();
 
@@ -23,17 +23,61 @@ async function loadProfessionals(forceRefresh = false) {
   return professionalsCache;
 }
 
+// Helper to normalize text (trim, lowercase for comparison)
+function normalizeText(text) {
+  return text?.trim().toLowerCase() || '';
+}
+
+// Helper to split professions by comma
+function splitProfessions(profession) {
+  if (!profession) return [];
+  return profession.split(/[,،]/).map(p => p.trim()).filter(Boolean);
+}
+
+// Helper to get unique cities (normalized)
+function getUniqueCities(professionals) {
+  const cityMap = new Map();
+  professionals.forEach(p => {
+    if (p.city) {
+      const normalized = normalizeText(p.city);
+      if (!cityMap.has(normalized)) {
+        cityMap.set(normalized, p.city.trim());
+      }
+    }
+  });
+  return [...cityMap.values()].sort();
+}
+
+// Helper to get unique professions (normalized, split by comma)
+function getUniqueProfessions(professionals) {
+  const professionMap = new Map();
+  professionals.forEach(p => {
+    splitProfessions(p.profession).forEach(prof => {
+      const normalized = normalizeText(prof);
+      if (!professionMap.has(normalized)) {
+        professionMap.set(normalized, prof);
+      }
+    });
+  });
+  return [...professionMap.values()].sort();
+}
+
 router.get('/', async (req, res) => {
   try {
     const { city, profession } = req.query;
     let professionals = await loadProfessionals();
 
     if (city) {
-      professionals = professionals.filter(p => p.city === city);
+      const normalizedCity = normalizeText(city);
+      professionals = professionals.filter(p => normalizeText(p.city) === normalizedCity);
     }
 
     if (profession) {
-      professionals = professionals.filter(p => p.profession === profession);
+      const normalizedProfession = normalizeText(profession);
+      professionals = professionals.filter(p => {
+        const profs = splitProfessions(p.profession);
+        return profs.some(prof => normalizeText(prof) === normalizedProfession);
+      });
     }
 
     res.json(professionals);
@@ -46,7 +90,7 @@ router.get('/', async (req, res) => {
 router.get('/cities', async (req, res) => {
   try {
     const professionals = await loadProfessionals();
-    const cities = getCitiesFromProfessionals(professionals);
+    const cities = getUniqueCities(professionals);
     res.json(cities);
   } catch (error) {
     console.error('Error fetching cities:', error);
@@ -57,7 +101,7 @@ router.get('/cities', async (req, res) => {
 router.get('/professions', async (req, res) => {
   try {
     const professionals = await loadProfessionals();
-    const professions = getProfessionsFromProfessionals(professionals);
+    const professions = getUniqueProfessions(professionals);
     res.json(professions);
   } catch (error) {
     console.error('Error fetching professions:', error);

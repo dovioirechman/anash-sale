@@ -13,6 +13,13 @@ const DefaultAvatar = () => (
   </div>
 );
 
+// Check if URL is a valid image
+function isValidImageUrl(url) {
+  if (!url) return false;
+  if (url.includes('placehold.co')) return false;
+  return true;
+}
+
 function formatPhoneForWhatsApp(phone) {
   if (!phone) return null;
   let cleaned = phone.replace(/[-\s]/g, '');
@@ -167,7 +174,7 @@ export function Professionals() {
           {professionals.map(pro => (
             <div key={pro.id} className="professional-card">
               <div className="professional-image">
-                {pro.imageUrl ? (
+                {isValidImageUrl(pro.imageUrl) ? (
                   <img src={pro.imageUrl} alt={pro.name} loading="lazy" />
                 ) : (
                   <DefaultAvatar />

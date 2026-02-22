@@ -20,20 +20,22 @@ const ISRAELI_CITIES = [
   'ירושלים', 'תל אביב', 'חיפה', 'באר שבע', 'ראשון לציון', 'פתח תקווה', 'אשדוד', 'נתניה',
   'בני ברק', 'חולון', 'רמת גן', 'אשקלון', 'בת ים', 'רחובות', 'הרצליה', 'כפר סבא',
   'חדרה', 'בית שמש', 'מודיעין', 'רעננה', 'לוד', 'רמלה', 'גבעתיים', 'נהריה', 'עכו',
-  'קריית גת', 'קריית מלאכי', 'קריית שמונה', 'קריית ביאליק', 'קריית ים', 'קריית אתא',
+  'קריית גת', 'קרית גת', 'קריית מלאכי', 'קרית מלאכי', 'קריית שמונה', 'קרית שמונה',
+  'קריית ביאליק', 'קרית ביאליק', 'קריית ים', 'קרית ים', 'קריית אתא', 'קרית אתא',
   'אילת', 'עפולה', 'נצרת', 'כרמיאל', 'טבריה', 'צפת', 'דימונה',
-  'אלעד', 'ביתר עילית', 'מודיעין עילית', 'עמנואל', 'קריית ספר',
-  'אריאל', 'מעלה אדומים', 'גבעת זאב', 'אפרת', 'קרית ארבע',
+  'אלעד', 'ביתר עילית', 'מודיעין עילית', 'עמנואל', 'קריית ספר', 'קרית ספר',
+  'אריאל', 'מעלה אדומים', 'גבעת זאב', 'אפרת', 'קרית ארבע', 'קריית ארבע',
   'מגדל העמק', 'אחיסמך', 'יבנה', 'נס ציונה', 'אור יהודה', 'יהוד', 'גני תקווה',
   'כפר חב״ד', 'כפר חבד', 'נחלת הר חב״ד', 'נחלת הר חבד',
-];
+].sort((a, b) => b.length - a.length); // Sort by length (longest first) to match more specific cities first
 
 const APARTMENT_CATEGORIES = ['דירות להשכרה', 'דירות למכירה', 'דירות', 'נדל״ן', 'נדל"ן', 'נדל״ן בלוד'];
 
 function detectCity(text) {
   if (!text) return null;
+  const lowerText = text.toLowerCase();
   for (const city of ISRAELI_CITIES) {
-    if (text.includes(city)) return city;
+    if (lowerText.includes(city.toLowerCase())) return city;
   }
   return null;
 }
@@ -50,40 +52,9 @@ function createStableId(prefix, text) {
   return `${prefix}-${hash}`;
 }
 
-const topicStyles = {
-  'דירות': { bg: '4A90A4', icon: '🏠' },
-  'דירה': { bg: '4A90A4', icon: '🏠' },
-  'דירות למכירה': { bg: '3B82F6', icon: '🏡' },
-  'דירות להשכרה': { bg: '6366F1', icon: '🏢' },
-  'משרות': { bg: '7B68A6', icon: '💼' },
-  'משרה': { bg: '7B68A6', icon: '💼' },
-  'רכבים': { bg: '5D8AA8', icon: '🚗' },
-  'רכב': { bg: '5D8AA8', icon: '🚗' },
-  'ריהוט': { bg: 'A67B5B', icon: '🪑' },
-  'אלקטרוניקה': { bg: '708090', icon: '📱' },
-  'ביגוד': { bg: 'C08081', icon: '👔' },
-  'ספרים': { bg: '8B7355', icon: '📚' },
-  'כללי': { bg: '6B8E6B', icon: '📦' },
-  'חדשות חב״ד': { bg: '7C3AED', icon: '📰' },
-  'חדשות כלכלה': { bg: '059669', icon: '📈' },
-  'נדל״ן בלוד': { bg: '0891B2', icon: '🏙️' },
-  'נדל״ן': { bg: '0891B2', icon: '🏙️' },
-  'קבוצות וואטסאפ': { bg: '25D366', icon: '💬' },
-  'בעלי מקצוע': { bg: 'D97706', icon: '🔧' },
-};
-
 function generateImageUrl(topic) {
-  let style = topicStyles[topic];
-  if (!style) {
-    for (const [key, value] of Object.entries(topicStyles)) {
-      if (topic?.includes(key) || key.includes(topic)) {
-        style = value;
-        break;
-      }
-    }
-  }
-  style = style || { bg: '64748B', icon: '📋' };
-  return `https://placehold.co/800x400/${style.bg}/ffffff?text=${encodeURIComponent(style.icon)}`;
+  // Return null - let the frontend handle default icons based on category
+  return null;
 }
 
 async function getDocContent(fileId) {
@@ -171,7 +142,7 @@ async function fetchWhatsAppGroups() {
           link,
           topic: 'קבוצות וואטסאפ',
           date: new Date().toISOString(),
-          imageUrl: 'https://placehold.co/800x400/25D366/ffffff?text=📱',
+          imageUrl: null,
           isExternal: true,
         });
       }
@@ -347,7 +318,7 @@ function extractHeadlines(html, baseUrl, source, limit) {
           title: title.substring(0, 80),
           summary: `מקור: ${source.name} | לחץ לקריאת הכתבה המלאה`,
           link: link || baseUrl,
-          imageUrl: `https://placehold.co/800x400/${source.color}/ffffff?text=${encodeURIComponent(source.icon)}`,
+          imageUrl: null,
           date: new Date().toISOString(),
           isExternal: true,
         });
@@ -671,12 +642,63 @@ async function loadProfessionals(forceRefresh = false) {
   return professionalsCache;
 }
 
+// Helper to normalize text (trim, lowercase for comparison)
+function normalizeText(text) {
+  return text?.trim().toLowerCase() || '';
+}
+
+// Helper to split professions by comma
+function splitProfessions(profession) {
+  if (!profession) return [];
+  return profession.split(/[,،]/).map(p => p.trim()).filter(Boolean);
+}
+
+// Helper to get unique cities (normalized)
+function getUniqueCities(professionals) {
+  const cityMap = new Map();
+  professionals.forEach(p => {
+    if (p.city) {
+      const normalized = normalizeText(p.city);
+      if (!cityMap.has(normalized)) {
+        cityMap.set(normalized, p.city.trim());
+      }
+    }
+  });
+  return [...cityMap.values()].sort();
+}
+
+// Helper to get unique professions (normalized, split by comma)
+function getUniqueProfessions(professionals) {
+  const professionMap = new Map();
+  professionals.forEach(p => {
+    splitProfessions(p.profession).forEach(prof => {
+      const normalized = normalizeText(prof);
+      if (!professionMap.has(normalized)) {
+        professionMap.set(normalized, prof);
+      }
+    });
+  });
+  return [...professionMap.values()].sort();
+}
+
 app.get('/api/professionals', async (req, res) => {
   try {
     const { city, profession } = req.query;
     let professionals = await loadProfessionals();
-    if (city) professionals = professionals.filter(p => p.city === city);
-    if (profession) professionals = professionals.filter(p => p.profession === profession);
+    
+    if (city) {
+      const normalizedCity = normalizeText(city);
+      professionals = professionals.filter(p => normalizeText(p.city) === normalizedCity);
+    }
+    
+    if (profession) {
+      const normalizedProfession = normalizeText(profession);
+      professionals = professionals.filter(p => {
+        const profs = splitProfessions(p.profession);
+        return profs.some(prof => normalizeText(prof) === normalizedProfession);
+      });
+    }
+    
     res.json(professionals);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -686,7 +708,7 @@ app.get('/api/professionals', async (req, res) => {
 app.get('/api/professionals/cities', async (req, res) => {
   try {
     const professionals = await loadProfessionals();
-    const cities = [...new Set(professionals.map(p => p.city).filter(Boolean))].sort();
+    const cities = getUniqueCities(professionals);
     res.json(cities);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -696,7 +718,7 @@ app.get('/api/professionals/cities', async (req, res) => {
 app.get('/api/professionals/professions', async (req, res) => {
   try {
     const professionals = await loadProfessionals();
-    const professions = [...new Set(professionals.map(p => p.profession).filter(Boolean))].sort();
+    const professions = getUniqueProfessions(professionals);
     res.json(professions);
   } catch (error) {
     res.status(500).json({ error: error.message });

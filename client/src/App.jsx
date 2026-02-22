@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useArticles, isApartmentCategory } from './hooks/useArticles';
 import { fetchArticle, fetchArticles } from './api/articles';
+import { fetchProfessionals } from './api/professionals';
 import { TopicFilter } from './components/TopicFilter';
 import { CityFilter } from './components/CityFilter';
 import { ArticleCard } from './components/ArticleCard';
@@ -16,6 +17,24 @@ import './styles.css';
 
 // Categories to exclude from publishing (external sources)
 const EXCLUDED_CATEGORIES = ['חדשות חב״ד', 'חדשות כלכלה', 'נדל״ן בלוד', 'קבוצות וואטסאפ'];
+
+// Category icons for page headers
+const CATEGORY_ICONS = {
+  'דירות למכירה': { icon: 'home', color: '#3B82F6' },
+  'דירות להשכרה': { icon: 'apartment', color: '#6366F1' },
+  'משרות': { icon: 'work', color: '#7B68A6' },
+  'רכבים': { icon: 'directions_car', color: '#5D8AA8' },
+  'ריהוט': { icon: 'chair', color: '#A67B5B' },
+  'אלקטרוניקה': { icon: 'devices', color: '#708090' },
+  'ביגוד': { icon: 'checkroom', color: '#C08081' },
+  'ספרים': { icon: 'menu_book', color: '#8B7355' },
+  'כללי': { icon: 'inventory_2', color: '#6B8E6B' },
+  'חדשות חב״ד': { icon: 'article', color: '#7C3AED' },
+  'חדשות כלכלה': { icon: 'trending_up', color: '#059669' },
+  'נדל״ן בלוד': { icon: 'location_city', color: '#0891B2' },
+  'קבוצות וואטסאפ': { icon: 'groups', color: '#25D366' },
+  'בעלי מקצוע': { icon: 'engineering', color: '#D97706' },
+};
 
 // Special topics
 const ADS_TOPIC = '__פרסומות__';
@@ -83,6 +102,24 @@ export default function App() {
     setSearchQuery(''); // Clear search when changing topic
   };
 
+  // Search match - checks if query word appears in text
+  const searchMatch = (query, text) => {
+    if (!query || !text || query.length < 2) return 0;
+    query = query.toLowerCase();
+    text = text.toLowerCase();
+    
+    // Exact word match or contains - highest score
+    if (text.includes(query)) return 3;
+    
+    // Word starts with query (minimum 3 chars to avoid too many matches)
+    if (query.length >= 3) {
+      const words = text.split(/\s+/);
+      if (words.some(w => w.startsWith(query))) return 2;
+    }
+    
+    return 0;
+  };
+
   // Search functionality
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -96,18 +133,59 @@ export default function App() {
     setSelectedTopic(SEARCH_TOPIC);
     
     try {
-      const allArticles = await fetchArticles(); // Fetch all articles
+      // Fetch both articles and professionals
+      const [allArticles, allProfessionals] = await Promise.all([
+        fetchArticles(),
+        fetchProfessionals()
+      ]);
       
-      // Split query into words for flexible search
-      const queryWords = searchQuery.trim().toLowerCase().split(/\s+/).filter(w => w.length > 1);
+      // Split query into words for search (minimum 2 chars per word)
+      const queryWords = searchQuery.trim().toLowerCase().split(/\s+/).filter(w => w.length >= 2);
       
-      const filtered = allArticles.filter(article => {
-        const searchText = `${article.title || ''} ${article.summary || ''} ${article.content || ''}`.toLowerCase();
-        // Article matches if ALL words are found (anywhere in the text)
-        return queryWords.every(word => searchText.includes(word));
-      });
+      if (queryWords.length === 0) {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
       
-      setSearchResults(filtered);
+      // Search articles - require ALL words to match
+      const scoredArticles = allArticles.map(article => {
+        const searchText = `${article.title || ''} ${article.summary || ''} ${article.content || ''}`;
+        const scores = queryWords.map(word => searchMatch(word, searchText));
+        // All words must match (score > 0)
+        if (scores.some(s => s === 0)) return { item: article, score: 0 };
+        const score = scores.reduce((a, b) => a + b, 0);
+        return { item: article, score };
+      }).filter(x => x.score >= queryWords.length * 2); // Minimum threshold
+      
+      // Search professionals - require ALL words to match
+      const scoredProfessionals = allProfessionals.map(pro => {
+        const searchText = `${pro.name || ''} ${pro.profession || ''} ${pro.city || ''}`;
+        const scores = queryWords.map(word => searchMatch(word, searchText));
+        if (scores.some(s => s === 0)) return { item: null, score: 0 };
+        const score = scores.reduce((a, b) => a + b, 0);
+        return {
+          item: {
+            id: `pro-${pro.id}`,
+            title: pro.name,
+            summary: `${pro.profession || ''} ${pro.city ? '| ' + pro.city : ''}`,
+            content: `${pro.name}\n${pro.profession || ''}\n${pro.city || ''}\n${pro.phone || ''}`,
+            topic: 'בעלי מקצוע',
+            imageUrl: pro.imageUrl,
+            date: new Date().toISOString(),
+            isProfessional: true,
+            phone: pro.phone
+          },
+          score
+        };
+      }).filter(x => x.score >= queryWords.length * 2 && x.item);
+      
+      // Combine and sort by score (best matches first)
+      const combined = [...scoredArticles, ...scoredProfessionals]
+        .sort((a, b) => b.score - a.score)
+        .map(x => x.item);
+      
+      setSearchResults(combined);
     } catch (e) {
       console.error('Search error:', e);
       setSearchResults([]);
@@ -303,7 +381,13 @@ export default function App() {
             <div className="loading"></div>
           ) : articles.length === 0 ? (
             <div className="empty-state">
-              <span className="empty-icon">📋</span>
+              <span className="empty-icon">
+                {CATEGORY_ICONS[selectedTopic] ? (
+                  <span className="material-icons-outlined" style={{ fontSize: '3rem', color: CATEGORY_ICONS[selectedTopic].color }}>
+                    {CATEGORY_ICONS[selectedTopic].icon}
+                  </span>
+                ) : '📋'}
+              </span>
               <p>אין מודעות להצגה</p>
             </div>
           ) : (

@@ -5,6 +5,13 @@ import { WhatsAppGroups } from './WhatsAppGroups';
 import { useBannerAds } from './AdBanner';
 import { fetchProfessionals } from '../api/professionals';
 
+// Check if URL is a valid image
+function isValidImageUrl(url) {
+  if (!url) return false;
+  if (url.includes('placehold.co')) return false;
+  return true;
+}
+
 // Category icons
 const CATEGORY_ICONS = {
   'דירות למכירה': '🏠',
@@ -164,7 +171,7 @@ export function HomePage({ onArticleClick, onCategoryClick }) {
                 {professionals.map(pro => (
                   <div key={pro.id} className="home-professional-card">
                     <div className="home-pro-avatar">
-                      {pro.imageUrl ? (
+                      {isValidImageUrl(pro.imageUrl) ? (
                         <img src={pro.imageUrl} alt={pro.name} />
                       ) : (
                         <span className="material-icons-outlined">engineering</span>

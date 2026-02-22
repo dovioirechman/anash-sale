@@ -234,7 +234,7 @@ export async function fetchRealEstate() {
           title: address,
           summary: `${beds} חדרים | קומה ${floor} | ${area} מ"ר | ₪${priceFormatted}`,
           content: `כתובת: ${address}\n\nמחיר: ₪${priceFormatted}\nחדרים: ${beds}\nקומה: ${floor}\nשטח: ${area} מ"ר`,
-          imageUrl: `https://placehold.co/800x400/4A90A4/ffffff?text=🏠`,
+          imageUrl: null,
           date: new Date().toISOString(),
         });
       }
@@ -301,7 +301,7 @@ function extractHeadlines(html, baseUrl, source, limit) {
           title: title.substring(0, 80),
           summary: `מקור: ${source.name} | לחץ לקריאת הכתבה המלאה`,
           link: link || baseUrl,
-          imageUrl: `https://placehold.co/800x400/${source.color}/${source.textColor}?text=${encodeURIComponent(source.icon)}`,
+          imageUrl: null,
           date: new Date().toISOString(),
           isExternal: true,
         });
