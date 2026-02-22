@@ -642,9 +642,14 @@ async function loadProfessionals(forceRefresh = false) {
   return professionalsCache;
 }
 
-// Helper to normalize text (trim, lowercase for comparison)
+// Helper to normalize text (trim, lowercase, remove special chars for comparison)
 function normalizeText(text) {
-  return text?.trim().toLowerCase() || '';
+  if (!text) return '';
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/[״"'׳]/g, '') // Remove Hebrew and regular quotes
+    .replace(/\s+/g, ' ');   // Normalize whitespace
 }
 
 // Helper to split professions by comma

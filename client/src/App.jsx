@@ -40,11 +40,51 @@ const CATEGORY_ICONS = {
 const ADS_TOPIC = '__פרסומות__';
 const HOME_TOPIC = '__ראשי__';
 const PROFESSIONALS_TOPIC = 'בעלי מקצוע';
-
 const SEARCH_TOPIC = '__חיפוש__';
 
+// URL slug mappings (Hebrew to English)
+const CATEGORY_SLUGS = {
+  [HOME_TOPIC]: '',
+  [ADS_TOPIC]: 'ads',
+  [PROFESSIONALS_TOPIC]: 'professionals',
+  'משרות': 'jobs',
+  'דירות למכירה': 'apartments-sale',
+  'דירות להשכרה': 'apartments-rent',
+  'חדשות חב״ד': 'chabad-news',
+  'חדשות כלכלה': 'economy-news',
+  'רכבים': 'vehicles',
+  'ריהוט': 'furniture',
+  'אלקטרוניקה': 'electronics',
+  'ביגוד': 'clothing',
+  'ספרים': 'books',
+  'כללי': 'general',
+  'נדל״ן בלוד': 'real-estate-lod',
+  'קבוצות וואטסאפ': 'whatsapp-groups',
+};
+
+// Reverse mapping (English to Hebrew)
+const SLUG_TO_CATEGORY = Object.fromEntries(
+  Object.entries(CATEGORY_SLUGS).map(([k, v]) => [v, k])
+);
+
+// Get initial topic from URL
+function getInitialTopic() {
+  const path = window.location.pathname.slice(1); // Remove leading /
+  if (!path || path === '') return HOME_TOPIC;
+  return SLUG_TO_CATEGORY[path] || HOME_TOPIC;
+}
+
+// Update URL without page reload
+function updateUrl(topic) {
+  const slug = CATEGORY_SLUGS[topic] || '';
+  const newPath = slug ? `/${slug}` : '/';
+  if (window.location.pathname !== newPath) {
+    window.history.pushState({ topic }, '', newPath);
+  }
+}
+
 export default function App() {
-  const [selectedTopic, setSelectedTopic] = useState(HOME_TOPIC); // Default to home page
+  const [selectedTopic, setSelectedTopic] = useState(getInitialTopic); // Read from URL
   const [previousTopic, setPreviousTopic] = useState(HOME_TOPIC); // Track previous topic for search cancel
   const [selectedCity, setSelectedCity] = useState(null);
   const [selectedArticle, setSelectedArticle] = useState(null);
@@ -95,11 +135,24 @@ export default function App() {
     selectedCity
   );
   
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const topic = getInitialTopic();
+      setSelectedTopic(topic);
+      setSelectedCity(null);
+      setSelectedArticle(null);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Reset city filter when topic changes
   const handleTopicSelect = (topic) => {
     setSelectedTopic(topic);
     setSelectedCity(null); // Reset city when topic changes
     setSearchQuery(''); // Clear search when changing topic
+    updateUrl(topic); // Update URL
   };
 
   // Search match - checks if query word appears in text
@@ -260,7 +313,7 @@ export default function App() {
       )}
       <div className="header-top-sticky" ref={headerRef}>
         <div className="header-content">
-          <div className="brand" onClick={() => setSelectedTopic(HOME_TOPIC)} style={{ cursor: 'pointer' }}>
+          <div className="brand" onClick={() => handleTopicSelect(HOME_TOPIC)} style={{ cursor: 'pointer' }}>
             <img src="/logo.png" alt="אנ״ש סייל" className="logo" />
           </div>
 
