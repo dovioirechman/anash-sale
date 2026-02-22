@@ -52,13 +52,37 @@ function createStableId(prefix, text) {
 
 const topicStyles = {
   'דירות': { bg: '4A90A4', icon: '🏠' },
+  'דירה': { bg: '4A90A4', icon: '🏠' },
+  'דירות למכירה': { bg: '3B82F6', icon: '🏡' },
+  'דירות להשכרה': { bg: '6366F1', icon: '🏢' },
   'משרות': { bg: '7B68A6', icon: '💼' },
+  'משרה': { bg: '7B68A6', icon: '💼' },
   'רכבים': { bg: '5D8AA8', icon: '🚗' },
+  'רכב': { bg: '5D8AA8', icon: '🚗' },
   'ריהוט': { bg: 'A67B5B', icon: '🪑' },
+  'אלקטרוניקה': { bg: '708090', icon: '📱' },
+  'ביגוד': { bg: 'C08081', icon: '👔' },
+  'ספרים': { bg: '8B7355', icon: '📚' },
+  'כללי': { bg: '6B8E6B', icon: '📦' },
+  'חדשות חב״ד': { bg: '7C3AED', icon: '📰' },
+  'חדשות כלכלה': { bg: '059669', icon: '📈' },
+  'נדל״ן בלוד': { bg: '0891B2', icon: '🏙️' },
+  'נדל״ן': { bg: '0891B2', icon: '🏙️' },
+  'קבוצות וואטסאפ': { bg: '25D366', icon: '💬' },
+  'בעלי מקצוע': { bg: 'D97706', icon: '🔧' },
 };
 
 function generateImageUrl(topic) {
-  const style = topicStyles[topic] || { bg: '81B29A', icon: '📦' };
+  let style = topicStyles[topic];
+  if (!style) {
+    for (const [key, value] of Object.entries(topicStyles)) {
+      if (topic?.includes(key) || key.includes(topic)) {
+        style = value;
+        break;
+      }
+    }
+  }
+  style = style || { bg: '64748B', icon: '📋' };
   return `https://placehold.co/800x400/${style.bg}/ffffff?text=${encodeURIComponent(style.icon)}`;
 }
 
@@ -227,18 +251,111 @@ async function fetchAdsFromFolder(folderName) {
 
 // Helper to clean HTML text
 function cleanText(text) {
+  if (!text) return '';
   return text
     .replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/g, ' ')
     .replace(/&quot;/g, '"')
     .replace(/&amp;/g, '&')
+    .replace(/&#\d+;/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
 function isNavigationText(text) {
-  const navPatterns = ['חדשות', 'כתבות', 'עמוד הבית', 'אודות', 'צור קשר', 'תפריט'];
-  return navPatterns.some(p => text === p || text.length < 5);
+  const navTerms = [
+    'חדשות', 'ראשי', 'צור קשר', 'אודות', 'חיפוש', 'תפריט',
+    'הרשם', 'התחבר', 'שלח', 'קרא עוד', 'לקריאה',
+    'facebook', 'youtube', 'telegram', 'instagram', 'twitter', 'tiktok',
+    'חב"ד בארץ', 'חב"ד בעולם', 'גלריות', 'שמחות', 'מבצעים',
+    'לפרסום', 'להוספה', 'לחצו כאן', 'הצטרפו',
+  ];
+  const lowerText = text.toLowerCase();
+  return navTerms.some(term => lowerText.includes(term)) || lowerText.length < 15;
+}
+
+// Chabad News Sources
+const NEWS_SOURCES = {
+  col: { name: 'חב״ד און ליין', icon: '📰', color: '7C3AED' },
+  chabadUpdates: { name: 'עדכוני חב"ד', icon: '📰', color: '7C3AED' },
+};
+
+async function fetchChabadNews() {
+  console.log('Fetching Chabad news...');
+  
+  try {
+    const [colItems, updatesItems] = await Promise.all([
+      fetchHeadlinesFromUrl('https://col.org.il/main', 'https://col.org.il', NEWS_SOURCES.col, 5),
+      fetchHeadlinesFromUrl('https://chabadupdates.com/', 'https://chabadupdates.com', NEWS_SOURCES.chabadUpdates, 5),
+    ]);
+    
+    const allItems = [...colItems, ...updatesItems].slice(0, 10).map(item => ({
+      ...item,
+      id: createStableId('chabad', item.title),
+      topic: 'חדשות חב״ד',
+      content: item.summary || item.title,
+    }));
+    
+    console.log(`Fetched ${allItems.length} Chabad headlines`);
+    return allItems;
+  } catch (error) {
+    console.error('Error fetching Chabad news:', error.message);
+    return [];
+  }
+}
+
+async function fetchHeadlinesFromUrl(url, baseUrl, source, limit) {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; NewsBot/1.0)',
+        'Accept': 'text/html',
+      }
+    });
+    const html = await response.text();
+    return extractHeadlines(html, baseUrl, source, limit);
+  } catch (error) {
+    console.error(`Error fetching ${source.name}:`, error.message);
+    return [];
+  }
+}
+
+function extractHeadlines(html, baseUrl, source, limit) {
+  const items = [];
+  const seen = new Set();
+  
+  const patterns = [
+    /<a[^>]*href="([^"]+)"[^>]*>([^<]{20,120})<\/a>/gi,
+    /<h[123][^>]*>([^<]{20,120})<\/h[123]>/gi,
+  ];
+  
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(html)) !== null && items.length < limit) {
+      let link = match[1] || baseUrl;
+      const title = cleanText(match[2] || match[1]);
+      
+      if (isNavigationText(title)) continue;
+      
+      if (link && !link.startsWith('http')) {
+        link = baseUrl + (link.startsWith('/') ? '' : '/') + link;
+      }
+      
+      if (title && title.length > 20 && !seen.has(title)) {
+        seen.add(title);
+        items.push({
+          title: title.substring(0, 80),
+          summary: `מקור: ${source.name} | לחץ לקריאת הכתבה המלאה`,
+          link: link || baseUrl,
+          imageUrl: `https://placehold.co/800x400/${source.color}/ffffff?text=${encodeURIComponent(source.icon)}`,
+          date: new Date().toISOString(),
+          isExternal: true,
+        });
+      }
+    }
+  }
+  
+  return items;
 }
 
 async function fetchEconomyNews() {
@@ -326,11 +443,115 @@ async function fetchEconomyNews() {
   }
 }
 
+// ============ PROFESSIONALS ============
+const PROFESSIONALS_FOLDER_NAME = 'בעלי מקצוע';
+
+async function findProfessionalsFolder() {
+  const response = await drive.files.list({
+    key: API_KEY,
+    q: `'${FOLDER_ID}' in parents and name='${PROFESSIONALS_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    fields: 'files(id, name)',
+  });
+  return response.data.files?.[0] || null;
+}
+
+async function getImageFiles(folderId) {
+  const response = await drive.files.list({
+    key: API_KEY,
+    q: `'${folderId}' in parents and (mimeType contains 'image/') and trashed=false`,
+    fields: 'files(id, name)',
+  });
+  
+  const imageMap = {};
+  for (const file of response.data.files || []) {
+    const match = file.name.match(/^(\d+)\./);
+    if (match) {
+      imageMap[match[1]] = `https://drive.google.com/thumbnail?id=${file.id}&sz=w400`;
+    }
+  }
+  return imageMap;
+}
+
+function parseProfessionalSection(content, sectionNumber) {
+  const lines = content.split('\n').filter(line => line.trim());
+  let name = null, city = null, profession = null, phone = null;
+  
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.match(/^שם[:\s]/i)) {
+      name = trimmed.replace(/^שם[:\s]*/i, '').trim();
+    } else if (trimmed.match(/^עיר[:\s]/i)) {
+      city = trimmed.replace(/^עיר[:\s]*/i, '').trim();
+    } else if (trimmed.match(/^מקצוע[:\s]/i)) {
+      profession = trimmed.replace(/^מקצוע[:\s]*/i, '').trim();
+    } else if (trimmed.match(/^(?:טלפון|נייד|פלאפון)[:\s]/i)) {
+      phone = trimmed.replace(/^(?:טלפון|נייד|פלאפון)[:\s]*/i, '').trim();
+    } else {
+      const phoneMatch = trimmed.match(/0\d{1,2}[-\s]?\d{7,8}|05\d[-\s]?\d{3}[-\s]?\d{4}/);
+      if (phoneMatch && !phone) phone = phoneMatch[0];
+      if (!name && trimmed.length > 0 && !trimmed.includes(':')) name = trimmed;
+      else if (name && !profession && trimmed.length > 0 && !trimmed.includes(':')) profession = trimmed;
+    }
+  }
+  
+  return {
+    id: `professional-${sectionNumber}`,
+    number: sectionNumber,
+    name: name || `בעל מקצוע ${sectionNumber}`,
+    city: city || null,
+    profession: profession || null,
+    phone: phone || null,
+  };
+}
+
+async function fetchProfessionals() {
+  try {
+    const professionalsFolder = await findProfessionalsFolder();
+    if (!professionalsFolder) return [];
+
+    const response = await drive.files.list({
+      key: API_KEY,
+      q: `'${professionalsFolder.id}' in parents and mimeType='application/vnd.google-apps.document' and trashed=false`,
+      fields: 'files(id, name)',
+    });
+
+    const professionalsDoc = response.data.files?.find(f => f.name.includes('בעלי מקצוע') || f.name.includes('מקצוע'));
+    if (!professionalsDoc) return [];
+
+    const [content, imageMap] = await Promise.all([
+      getDocContent(professionalsDoc.id),
+      getImageFiles(professionalsFolder.id),
+    ]);
+
+    const sections = content.split(/(?=^##\s*\d+)/m);
+    const professionals = [];
+
+    for (const section of sections) {
+      const trimmed = section.trim();
+      if (!trimmed) continue;
+      const headingMatch = trimmed.match(/^##\s*(\d+)/);
+      if (!headingMatch) continue;
+      const sectionNumber = headingMatch[1];
+      const sectionContent = trimmed.replace(/^##\s*\d+\s*/, '').trim();
+      const professional = parseProfessionalSection(sectionContent, sectionNumber);
+      professional.imageUrl = imageMap[sectionNumber] || null;
+      professionals.push(professional);
+    }
+
+    return professionals;
+  } catch (error) {
+    console.error('Error fetching professionals:', error.message);
+    return [];
+  }
+}
+
 // ============ CACHE ============
 let articlesCache = [];
 let adsCache = [];
 let pageAdsCache = [];
+let professionalsCache = [];
 let lastFetchTime = 0;
+let professionalsLastFetch = 0;
 const CACHE_DURATION = 60 * 60 * 1000;
 
 function isCacheValid() {
@@ -342,13 +563,14 @@ async function loadAllContent(forceRefresh = false) {
     return articlesCache;
   }
 
-  const [driveArticles, whatsappGroups, economyNews] = await Promise.all([
+  const [driveArticles, chabadNews, economyNews, whatsappGroups] = await Promise.all([
     listAllArticles(),
-    fetchWhatsAppGroups(),
+    fetchChabadNews(),
     fetchEconomyNews(),
+    fetchWhatsAppGroups(),
   ]);
 
-  let allArticles = [...driveArticles, ...whatsappGroups, ...economyNews];
+  let allArticles = [...driveArticles, ...chabadNews, ...economyNews, ...whatsappGroups];
 
   allArticles = allArticles.map(article => {
     if (isApartmentCategory(article.topic)) {
@@ -434,6 +656,48 @@ app.get('/api/ads/page', async (req, res) => {
       pageAdsCache = await fetchAdsFromFolder('עמוד מודעות');
     }
     res.json(pageAdsCache);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============ PROFESSIONALS ============
+async function loadProfessionals(forceRefresh = false) {
+  if (!forceRefresh && professionalsCache.length > 0 && Date.now() - professionalsLastFetch < CACHE_DURATION) {
+    return professionalsCache;
+  }
+  professionalsCache = await fetchProfessionals();
+  professionalsLastFetch = Date.now();
+  return professionalsCache;
+}
+
+app.get('/api/professionals', async (req, res) => {
+  try {
+    const { city, profession } = req.query;
+    let professionals = await loadProfessionals();
+    if (city) professionals = professionals.filter(p => p.city === city);
+    if (profession) professionals = professionals.filter(p => p.profession === profession);
+    res.json(professionals);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/professionals/cities', async (req, res) => {
+  try {
+    const professionals = await loadProfessionals();
+    const cities = [...new Set(professionals.map(p => p.city).filter(Boolean))].sort();
+    res.json(cities);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/professionals/professions', async (req, res) => {
+  try {
+    const professionals = await loadProfessionals();
+    const professions = [...new Set(professionals.map(p => p.profession).filter(Boolean))].sort();
+    res.json(professions);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

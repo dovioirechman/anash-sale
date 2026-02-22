@@ -11,6 +11,7 @@ import { AdBanner, SidebarAds, useBannerAds } from './components/AdBanner';
 import { AdsPage } from './components/AdsPage';
 import { WhatsAppGroups } from './components/WhatsAppGroups';
 import { HomePage } from './components/HomePage';
+import { Professionals } from './components/Professionals';
 import './styles.css';
 
 // Categories to exclude from publishing (external sources)
@@ -19,6 +20,7 @@ const EXCLUDED_CATEGORIES = ['חדשות חב״ד', 'חדשות כלכלה', 'נ
 // Special topics
 const ADS_TOPIC = '__פרסומות__';
 const HOME_TOPIC = '__ראשי__';
+const PROFESSIONALS_TOPIC = 'בעלי מקצוע';
 
 const SEARCH_TOPIC = '__חיפוש__';
 
@@ -295,6 +297,8 @@ export default function App() {
             )
           ) : selectedTopic === ADS_TOPIC ? (
             <AdsPage />
+          ) : selectedTopic === PROFESSIONALS_TOPIC ? (
+            <Professionals />
           ) : loading ? (
             <div className="loading"></div>
           ) : articles.length === 0 ? (

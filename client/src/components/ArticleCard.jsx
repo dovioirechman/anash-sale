@@ -8,12 +8,7 @@ function formatDate(dateString) {
 
 export function ArticleCard({ article, onClick }) {
   const handleClick = () => {
-    if (article.isExternal && article.link) {
-      // Open external links in new tab
-      window.open(article.link, '_blank', 'noopener,noreferrer');
-    } else {
-      onClick(article);
-    }
+    onClick(article);
   };
 
   return (

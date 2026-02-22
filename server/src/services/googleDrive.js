@@ -21,23 +21,40 @@ function createStableId(prefix, text) {
 
 // Map Hebrew topics to colors and icons for themed images
 const topicStyles = {
-  'דירות': { bg: '4A90A4', icon: '🏠', label: 'דירה' },
-  'דירה': { bg: '4A90A4', icon: '🏠', label: 'דירה' },
-  'משרות': { bg: '7B68A6', icon: '💼', label: 'משרה' },
-  'משרה': { bg: '7B68A6', icon: '💼', label: 'משרה' },
-  'רכבים': { bg: '5D8AA8', icon: '🚗', label: 'רכב' },
-  'רכב': { bg: '5D8AA8', icon: '🚗', label: 'רכב' },
-  'ריהוט': { bg: 'A67B5B', icon: '🪑', label: 'ריהוט' },
-  'אלקטרוניקה': { bg: '708090', icon: '📱', label: 'אלקטרוניקה' },
-  'ביגוד': { bg: 'C08081', icon: '👔', label: 'ביגוד' },
-  'ספרים': { bg: '8B7355', icon: '📚', label: 'ספרים' },
-  'כללי': { bg: '6B8E6B', icon: '📦', label: 'כללי' },
+  'דירות': { bg: '4A90A4', icon: '🏠' },
+  'דירה': { bg: '4A90A4', icon: '🏠' },
+  'דירות למכירה': { bg: '3B82F6', icon: '🏡' },
+  'דירות להשכרה': { bg: '6366F1', icon: '🏢' },
+  'משרות': { bg: '7B68A6', icon: '💼' },
+  'משרה': { bg: '7B68A6', icon: '💼' },
+  'רכבים': { bg: '5D8AA8', icon: '🚗' },
+  'רכב': { bg: '5D8AA8', icon: '🚗' },
+  'ריהוט': { bg: 'A67B5B', icon: '🪑' },
+  'אלקטרוניקה': { bg: '708090', icon: '📱' },
+  'ביגוד': { bg: 'C08081', icon: '👔' },
+  'ספרים': { bg: '8B7355', icon: '📚' },
+  'כללי': { bg: '6B8E6B', icon: '📦' },
+  'חדשות חב״ד': { bg: '7C3AED', icon: '📰' },
+  'חדשות כלכלה': { bg: '059669', icon: '📈' },
+  'נדל״ן בלוד': { bg: '0891B2', icon: '🏙️' },
+  'נדל״ן': { bg: '0891B2', icon: '🏙️' },
+  'קבוצות וואטסאפ': { bg: '25D366', icon: '💬' },
+  'בעלי מקצוע': { bg: 'D97706', icon: '🔧' },
 };
 
 // Generate themed placeholder image with icon
 function generateImageUrl(topic, articleId) {
-  const style = topicStyles[topic] || { bg: '81B29A', icon: '📦', label: 'מודעה' };
-  // Using placehold.co for simple colored placeholders with text
+  // Find matching style by checking if topic contains key or key contains topic
+  let style = topicStyles[topic];
+  if (!style) {
+    for (const [key, value] of Object.entries(topicStyles)) {
+      if (topic?.includes(key) || key.includes(topic)) {
+        style = value;
+        break;
+      }
+    }
+  }
+  style = style || { bg: '64748B', icon: '📋' };
   return `https://placehold.co/800x400/${style.bg}/ffffff?text=${encodeURIComponent(style.icon)}`;
 }
 

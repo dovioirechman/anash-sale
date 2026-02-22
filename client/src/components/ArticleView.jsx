@@ -69,6 +69,20 @@ ${firstParagraph}
           </div>
         )}
         <div className="article-header">
+          {article.isExternal && article.link && (
+            <a 
+              href={article.link} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="source-link"
+            >
+              <span className="material-icons-outlined">open_in_new</span>
+              לכתבה המלאה במקור
+              {article.summary?.includes('חב״ד און ליין') && ' (חב״ד און ליין)'}
+              {article.summary?.includes('עדכוני חב"ד') && ' (עדכוני חב״ד)'}
+              {article.topic === 'חדשות כלכלה' && ' (ביזנעס)'}
+            </a>
+          )}
           <h1>{article.title}</h1>
           <time>{formatDate(article.date)}</time>
         </div>

@@ -5,6 +5,7 @@ import articlesRouter from './routes/articles.js';
 import newsRouter from './routes/news.js';
 import adsRouter from './routes/ads.js';
 import adminRouter from './routes/admin.js';
+import professionalsRouter from './routes/professionals.js';
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use('/api/articles', articlesRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/ads', adsRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/professionals', professionalsRouter);
 
 app.listen(config.port, () => {
   console.log(`Server running on port ${config.port}`);

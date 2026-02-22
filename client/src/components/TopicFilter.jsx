@@ -17,11 +17,14 @@ const TOPIC_ICONS = {
   'חדשות כלכלה': 'trending_up',
   'נדל״ן בלוד': 'location_city',
   'קבוצות וואטסאפ': 'forum',
+  'בעלי מקצוע': 'engineering',
 };
 
 export function getTopicIcon(topic) {
   return TOPIC_ICONS[topic] || 'label';
 }
+
+const PROFESSIONALS_TOPIC = 'בעלי מקצוע';
 
 export function TopicFilter({ topics, selected, onSelect, adsTopic, homeTopic }) {
   return (
@@ -32,6 +35,13 @@ export function TopicFilter({ topics, selected, onSelect, adsTopic, homeTopic })
         onClick={() => onSelect(homeTopic)}
       >
         <span className="material-icons-outlined">home</span> ראשי
+      </button>
+      {/* Professionals tab */}
+      <button 
+        className={selected === PROFESSIONALS_TOPIC ? 'active' : ''} 
+        onClick={() => onSelect(PROFESSIONALS_TOPIC)}
+      >
+        <span className="material-icons-outlined">engineering</span> בעלי מקצוע
       </button>
       {/* Ads tab */}
       <button 
